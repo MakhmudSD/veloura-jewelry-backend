@@ -1,3 +1,4 @@
+import { AuthService } from './../auth/auth.service';
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -9,12 +10,16 @@ import { response } from 'express';
 
 @Injectable()
 export class MemberService {
-	constructor(@InjectModel('Member') private readonly memberModel: Model<Member>) {}
+	constructor(
+		@InjectModel('Member') private readonly memberModel: Model<Member>,
+		private authService: AuthService,
+	) {}
 
 	public async signup(input: MemberInput): Promise<Member> {
-		// TODO: Hash expected
+		input.memberPassword = await this.authService.hashPassword(input.memberPassword);
 		try {
 			const result = await this.memberModel.create(input);
+			result.accessToken = await this.authService.createToken(result);
 			return result;
 		} catch (err) {
 			console.log('ERROR on service Model of signup', err.message);
@@ -30,18 +35,21 @@ export class MemberService {
 			throw new InternalServerErrorException(Message.NO_MEMBER_NICK);
 		}
 
-		if (response.memberStatus === MemberStatus.DELETE) {
+		if (!response || response.memberStatus === MemberStatus.DELETE) {
 			throw new InternalServerErrorException(Message.NO_MEMBER_NICK);
-		} else if (response.memberStatus === MemberStatus.BLOCK) {
+		} else if (!response || response.memberStatus === MemberStatus.BLOCK) {
 			throw new InternalServerErrorException(Message.BLOCKED_USER);
 		}
 
-		// TODO: compare passwords
-		const isMatch = memberPassword === response.memberPassword;
+		if (!response.memberPassword) {
+			throw new InternalServerErrorException(Message.NO_PASSWORD_FOUND);
+		}
+
+		const isMatch = await this.authService.comparePasswords(input.memberPassword, response.memberPassword, );
 		if (!isMatch) {
 			throw new InternalServerErrorException(Message.WRONG_PASSWORD);
 		}
-
+		response.accessToken = await this.authService.createToken(response);
 		return response;
 	}
 
