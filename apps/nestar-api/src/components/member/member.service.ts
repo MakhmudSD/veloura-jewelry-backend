@@ -45,7 +45,7 @@ export class MemberService {
 			throw new InternalServerErrorException(Message.NO_PASSWORD_FOUND);
 		}
 
-		const isMatch = await this.authService.comparePasswords(input.memberPassword, response.memberPassword, );
+		const isMatch = await this.authService.comparePasswords(input.memberPassword, response.memberPassword);
 		if (!isMatch) {
 			throw new InternalServerErrorException(Message.WRONG_PASSWORD);
 		}
@@ -59,5 +59,15 @@ export class MemberService {
 
 	public async getMember(): Promise<string> {
 		return 'getMember executed';
+	}
+
+	/** ADMIN **/
+
+	public async getAllMembersByAdmin(): Promise<string> {
+		return 'getAllMembersByAdmin executed';
+	}
+
+	public async updateMemberByAdmin(): Promise<string> {
+		return 'updateMemberByAdmin executed';
 	}
 }
