@@ -5,7 +5,7 @@ import { MemberAuthType, MemberStatus, MemberType } from '../../enums/member.enu
 @ObjectType()
 export class Member {
 	@Field(() => String)
-	_id: ObjectId;
+	_id?: ObjectId;
 
 	@Field(() => MemberType) // can be applied here due to register enum
 	memberType: MemberType;
@@ -80,4 +80,19 @@ export class Member {
 
 	@Field(() => String, { nullable: true })
 	accessToken?: String;
+}
+
+@ObjectType()
+export class TotalCounter {
+	@Field(() => Int, { nullable: true })
+	total?: number;
+}
+
+@ObjectType()
+export class Members {
+	@Field(() => [Member])
+	list: Member[];
+
+	@Field(() => [TotalCounter], { nullable: true })
+	metaCounter: TotalCounter[];
 }
