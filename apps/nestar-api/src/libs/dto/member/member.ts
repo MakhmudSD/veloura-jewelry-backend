@@ -5,9 +5,9 @@ import { MemberAuthType, MemberStatus, MemberType } from '../../enums/member.enu
 @ObjectType()
 export class Member {
 	@Field(() => String)
-	_id?: ObjectId;
+	_id: ObjectId;
 
-	@Field(() => MemberType) // can be applied here due to register enum
+	@Field(() => MemberType)
 	memberType: MemberType;
 
 	@Field(() => MemberStatus)
@@ -31,13 +31,13 @@ export class Member {
 	memberImage: string;
 
 	@Field(() => String, { nullable: true })
-	memberAddress: string;
+	memberAddress?: string;
 
 	@Field(() => String, { nullable: true })
-	memberDesc: string;
+	memberDesc?: string;
 
 	@Field(() => Int)
-	memberProperties: number;
+	memberProperties?: number;
 
 	@Field(() => Int)
 	memberArticles: number;
@@ -70,12 +70,12 @@ export class Member {
 	memberBlocks: number;
 
 	@Field(() => Date, { nullable: true })
-	deletedAt: Date;
+	deletedAt?: Date;
 
-	@Field(() => Date, { nullable: true })
+	@Field(() => Date)
 	createdAt: Date;
 
-	@Field(() => Date, { nullable: true })
+	@Field(() => Date)
 	updatedAt: Date;
 
 	@Field(() => String, { nullable: true })

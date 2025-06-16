@@ -67,17 +67,21 @@ export class MemberService {
 		return result;
 	}
 
-	public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member> {
+	public async getMember(memberId: ObjectId | null, targetId: ObjectId): Promise<Member> {
 		const search: T = {
 			_id: targetId,
 			memberStatus: {
 				$in: [MemberStatus.ACTIVE, MemberStatus.BLOCK],
 			},
 		};
+		
 		const targetMember = await this.memberModel.findOne(search).exec();
-		if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+		if (!targetMember) {
+			console.error('Member not found or inactive:', targetId);
+			throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+		}
 
-		if (!memberId) {
+		if (memberId) {
 			const viewInput = { memberId: memberId, viewRefId: targetId, viewGroup: ViewGroup.MEMBER };
 			const newView = await this.viewService.recordView(viewInput);
 			if (newView) {
@@ -85,8 +89,13 @@ export class MemberService {
 				targetMember.memberViews++;
 			}
 		}
+		
+
+		//meLiked
+		//meFollowed
 		return targetMember;
 	}
+	
 	public async getAgents(memberId: ObjectId, input: AgentsInquiry): Promise<Members> {
 		const { text } = input.search;
 		const match: T = { memberType: MemberType.AGENT, memberStatus: MemberStatus.ACTIVE };
