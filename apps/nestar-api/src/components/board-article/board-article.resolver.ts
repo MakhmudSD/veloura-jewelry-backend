@@ -44,15 +44,15 @@ export class BoardArticleResolver {
 		return await this.boardArticleService.getBoardArticle(memberId, articleId);
 	}
 
-        // @Roles(MemberType.AGENT)
-        // @UseGuards(RolesGuard)
-        // @Mutation((returns) => BoardArticle)
-        // public async updateProperty(
-        //     @Args('input') input: BoardArticleUpdate,
-        //     @AuthMember('_id') memberId: ObjectId,
-        // ): Promise<BoardArticle> {
-        //     console.log('@Mutation: updateProperty');
-        //     input._id = shapeIntoMongoObjectId(input._id);
-        //     return await this.boardArticleService.updateProperty(memberId, input);
-        // }
+	@Roles(MemberType.AGENT)
+	@UseGuards(RolesGuard)
+	@Mutation((returns) => BoardArticle)
+	public async updateBoardArticle(
+		@Args('input') input: BoardArticleUpdate,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<BoardArticle> {
+		console.log('@Mutation: updateProperty');
+		input._id = shapeIntoMongoObjectId(input._id);
+		return await this.boardArticleService.updateBoardArticle(memberId, input);
+	}
 }
