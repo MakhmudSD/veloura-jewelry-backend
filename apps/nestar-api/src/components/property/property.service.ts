@@ -32,7 +32,7 @@ export class PropertyService {
 			await this.memberService.memberStatsEditor({ _id: result.memberId, targetKey: 'memberProperties', modifier: 1 });
 			return result;
 		} catch (err) {
-			console.log('ERROR on service Model of signup', err.message);
+			console.log('ERROR on service Model of createProperty', err.message);
 			throw new BadRequestException(Message.CREATE_FAILED);
 		}
 	}
