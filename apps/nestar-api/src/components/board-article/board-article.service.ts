@@ -34,4 +34,36 @@ export class BoardArticleService {
 			throw new BadRequestException(Message.CREATE_FAILED);
 		}
 	}
+
+	public async getBoardArticle(memberId: ObjectId, articleId: ObjectId): Promise<BoardArticle> {
+		const search: T = {
+			_id: articleId,
+			articleStatus: BoardArticleStatus.ACTIVE,
+		};
+
+		const targetBoardArticle: BoardArticle | null = await this.boardArticleModel.findOne(search).lean().exec();
+		if (!targetBoardArticle) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		if (memberId) {
+			const viewInput = { memberId: memberId, viewRefId: articleId, viewGroup: ViewGroup.ARTICLE };
+			const newView = await this.viewService.recordView(viewInput);
+			if (newView) {
+				await this.boardArticleStatsEditor({ _id: articleId, targetKey: 'articleViews', modifier: 1 });
+				targetBoardArticle.articleViews++;
+			}
+		}
+
+		targetBoardArticle.memberData = await this.memberService.getMember(null, targetBoardArticle.memberId);
+		return targetBoardArticle;
+	}
+
+	public async boardArticleStatsEditor(input: StatisticModifier): Promise<BoardArticle | null> {
+		const { _id, targetKey, modifier } = input;
+		const updated = await this.boardArticleModel
+			.findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+			.lean()
+			.exec();
+
+		return updated as BoardArticle | null;
+	}
 }

@@ -32,4 +32,15 @@ export class BoardArticleResolver {
 		input.memberId = memberId; // not coming from frontend, exists only in backend
 		return await this.boardArticleService.createBoardArticle(input);
 	}
+
+	@UseGuards(WithoutGuard)
+	@Query((returns) => BoardArticle)
+	public async getBoardArticle(
+		@Args('propertyId') input: string,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<BoardArticle> {
+		console.log('Query: getBoardArticle');
+		const articleId = shapeIntoMongoObjectId(input);
+		return await this.boardArticleService.getBoardArticle(memberId, articleId);
+	}
 }
