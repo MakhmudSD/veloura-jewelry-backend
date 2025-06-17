@@ -146,6 +146,43 @@ export class PropertyService {
 		return result[0];
 	}
 
+		/** ADMIN **/
+
+	public async getAllPropertiesByAdmin(memberId: ObjectId, input: AllPropertiesInquiry): Promise<Properties> {
+		const { propertyStatus, propertyLocationList } = input.search;
+		const match: T = {};
+		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+
+
+		if (propertyStatus) match.propertyStatus = propertyStatus;
+		if (propertyLocationList) match.propertyLocation = propertyLocationList;
+		const result = await this.propertyModel
+			.aggregate([
+				{ $match: match },
+				{ $sort: sort },
+				{
+					$facet: {
+						list: [
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							// meLiked
+							lookupMember,
+							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
+						],
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
+
+		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		return result[0];
+	}
+
+
+	/** PRIVATES **/
+
 	private shapeMatchQuery(match: T, input: PropertiesInquiry): void {
 		const search = input.search;
 		if (!search) return;
