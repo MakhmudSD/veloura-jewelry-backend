@@ -119,6 +119,38 @@ export class BoardArticleService {
 		return result[0];
 	}
 
+	public async getAllBoardArticlesByAdmin(memberId: ObjectId, input: AllBoardArticlesInquiry): Promise<BoardArticles> {
+		const { articleStatus, articleCategory } = input.search;
+		const match: T = {};
+		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+
+		if (articleStatus) match.articleStatus = articleStatus;
+		if (articleCategory) match.articleCategory = articleCategory;
+
+		const result = await this.boardArticleModel
+			.aggregate([
+				{ $match: match },
+				{ $sort: sort },
+				{
+					$facet: {
+						list: [
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							// meLiked
+							lookupMember,
+							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
+						],
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
+
+		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		return result[0];
+	}
+
 	public async boardArticleStatsEditor(input: StatisticModifier): Promise<BoardArticle | null> {
 		const { _id, targetKey, modifier } = input;
 		const updated = await this.boardArticleModel
