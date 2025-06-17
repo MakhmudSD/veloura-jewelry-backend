@@ -202,13 +202,13 @@ export class PropertyService {
 		const result = await this.propertyModel.findOneAndUpdate(search, input, { new: true }).exec();
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 
-		if (input.soldAt || input.deletedAt) {
-			await this.memberService.memberStatsEditor({
-				_id: result.memberId,
-				targetKey: 'memberProperties',
-				modifier: -1,
-			});
-		}
+		// if (input.soldAt || input.deletedAt) {
+		// 	await this.memberService.memberStatsEditor({
+		// 		_id: result.memberId,
+		// 		targetKey: 'memberProperties',
+		// 		modifier: -1,
+		// 	});
+		// }
 
 		if (soldAt || deletedAt) {
 			await this.memberService.memberStatsEditor({
