@@ -10,7 +10,12 @@ import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { ObjectId } from 'mongoose';
 import { WithoutGuard } from '../auth/guards/without.guard';
 import { shapeIntoMongoObjectId } from '../../libs/config';
-import { AgentsPropertiesInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.update';
+import {
+	AgentsPropertiesInquiry,
+	AllPropertiesInquiry,
+	PropertiesInquiry,
+	PropertyInput,
+} from '../../libs/dto/property/property.update';
 import { PropertyUpdate } from '../../libs/dto/property/property.input';
 
 @Resolver()
@@ -85,4 +90,11 @@ export class PropertyResolver {
 		return await this.propertyService.getAllPropertiesByAdmin(memberId, input);
 	}
 
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	@Mutation((returns) => Property)
+	public async updatePropertyByAdmin(@Args('input') input: PropertyUpdate): Promise<Property> {
+		console.log('Query: updatePropertyByAdmin', input);
+		return await this.propertyService.updatePropertyByAdmin(input);
+	}
 }

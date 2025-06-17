@@ -4,7 +4,12 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { InjectModel } from '@nestjs/mongoose';
 import { ViewService } from '../view/views.service';
 import { MemberService } from '../member/member.service';
-import { AgentsPropertiesInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.update';
+import {
+	AgentsPropertiesInquiry,
+	AllPropertiesInquiry,
+	PropertiesInquiry,
+	PropertyInput,
+} from '../../libs/dto/property/property.update';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { Properties, Property } from '../../libs/dto/property/property';
 import { Model, ObjectId } from 'mongoose';
@@ -146,13 +151,12 @@ export class PropertyService {
 		return result[0];
 	}
 
-		/** ADMIN **/
+	/** ADMIN **/
 
 	public async getAllPropertiesByAdmin(memberId: ObjectId, input: AllPropertiesInquiry): Promise<Properties> {
 		const { propertyStatus, propertyLocationList } = input.search;
 		const match: T = {};
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
-
 
 		if (propertyStatus) match.propertyStatus = propertyStatus;
 		if (propertyLocationList) match.propertyLocation = propertyLocationList;
@@ -180,6 +184,42 @@ export class PropertyService {
 		return result[0];
 	}
 
+	public async updatePropertyByAdmin(input: PropertyUpdate): Promise<Property> {
+		let { propertyStatus, soldAt, deletedAt } = input;
+
+		const search: T = {
+			_id: input._id,
+			propertyStatus: PropertyStatus.ACTIVE,
+		};
+
+		if (propertyStatus === PropertyStatus.SOLD) {
+			input.soldAt = moment().toDate();
+		}
+		if (propertyStatus === PropertyStatus.DELETE) {
+			input.deletedAt = moment().toDate();
+		}
+
+		const result = await this.propertyModel.findOneAndUpdate(search, input, { new: true }).exec();
+		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+
+		if (input.soldAt || input.deletedAt) {
+			await this.memberService.memberStatsEditor({
+				_id: result.memberId,
+				targetKey: 'memberProperties',
+				modifier: -1,
+			});
+		}
+
+		if (soldAt || deletedAt) {
+			await this.memberService.memberStatsEditor({
+				_id: result.memberId,
+				targetKey: 'memberProperties',
+				modifier: -1,
+			});
+		}
+
+		return result;
+	}
 
 	/** PRIVATES **/
 
