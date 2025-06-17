@@ -80,6 +80,9 @@ export class Member {
 
 	@Field(() => String, { nullable: true })
 	accessToken?: String;
+
+	@Field(() => Member, {nullable: true})
+	memberData?: Member
 }
 
 @ObjectType()
