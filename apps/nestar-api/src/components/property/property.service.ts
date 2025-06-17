@@ -1,16 +1,16 @@
+import { PropertyStatus } from './../../libs/enums/property.enum';
 import { ViewGroup } from './../../libs/enums/view.enum';
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ViewService } from '../view/views.service';
 import { MemberService } from '../member/member.service';
-import { PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.update';
+import { AgentsPropertiesInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.update';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { Properties, Property } from '../../libs/dto/property/property';
 import { Model, ObjectId } from 'mongoose';
-import { PropertyStatus } from '../../libs/enums/property.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { PropertyUpdate } from '../../libs/dto/property/property.input';
-import moment from 'moment';
+import * as moment from 'moment';
 import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 
 @Injectable()
@@ -110,6 +110,38 @@ export class PropertyService {
 			.exec();
 
 		if (!result) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		return result[0];
+	}
+
+	public async getAgentProperties(memberId: ObjectId, input: AgentsPropertiesInquiry): Promise<Properties> {
+		const { propertyStatus } = input.search;
+		if (propertyStatus === PropertyStatus.DELETE) throw new InternalServerErrorException(Message.NOT_ALLOWED_REQUEST);
+
+		const match: T = { memberId: memberId, propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE } };
+
+		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+
+		const result = await this.propertyModel
+			.aggregate([
+				{ $match: match },
+				{ $sort: sort },
+				{
+					$facet: {
+						list: [
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							// meLiked
+							lookupMember,
+							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
+						],
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
+
+		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
 		return result[0];
 	}
