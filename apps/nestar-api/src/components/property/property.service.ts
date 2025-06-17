@@ -10,6 +10,8 @@ import { Property } from '../../libs/dto/property/property';
 import { Model, ObjectId } from 'mongoose';
 import { PropertyStatus } from '../../libs/enums/property.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
+import { PropertyUpdate } from '../../libs/dto/property/property.input';
+import moment from 'moment';
 
 @Injectable()
 export class PropertyService {
@@ -50,6 +52,35 @@ export class PropertyService {
 
 		targetProperty.memberData = await this.memberService.getMember(null, targetProperty.memberId);
 		return targetProperty;
+	}
+
+	public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
+		const { propertyStatus } = input;
+		if (propertyStatus === PropertyStatus.SOLD) {
+			input.soldAt = moment().toDate();
+		}
+
+		if (propertyStatus === PropertyStatus.DELETE) {
+			input.deletedAt = moment().toDate();
+		}
+
+		const search: T = {
+			_id: input._id,
+			memberId: memberId,
+		};
+
+		const result = await this.propertyModel.findOneAndUpdate(search, input, { new: true }).exec();
+		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+
+		if (input.soldAt || input.deletedAt) {
+			await this.memberService.memberStatsEditor({
+				_id: memberId,
+				targetKey: 'memberProperties',
+				modifier: -1,
+			});
+		}
+
+		return result;
 	}
 
 	public async propertyStatsEditor(input: StatisticModifier): Promise<Property | null> {
