@@ -83,6 +83,42 @@ export class BoardArticleService {
 		return result;
 	}
 
+	public async getBoardArticles(memberId: ObjectId, input: BoardArticlesInquiry): Promise<BoardArticles> {
+		const { articleCategory, text } = input.search;
+
+		const match: T = { articleStatus: BoardArticleStatus.ACTIVE };
+		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+
+		if (articleCategory) match.articleCategory = articleCategory;
+
+		if (text) match.articleCategory = { $regex: new RegExp(text, 'i') };
+		if (input.search?.memberId) {
+			match.memberId = shapeIntoMongoObjectId(input.search.memberId);
+		}
+		const result = await this.boardArticleModel
+			.aggregate([
+				{ $match: match },
+				{ $sort: sort },
+				{
+					$facet: {
+						list: [
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							// meLiked
+							lookupMember,
+							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
+						],
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
+
+		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		return result[0];
+	}
+
 	public async boardArticleStatsEditor(input: StatisticModifier): Promise<BoardArticle | null> {
 		const { _id, targetKey, modifier } = input;
 		const updated = await this.boardArticleModel

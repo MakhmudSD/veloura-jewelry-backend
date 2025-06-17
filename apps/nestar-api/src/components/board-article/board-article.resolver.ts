@@ -55,4 +55,15 @@ export class BoardArticleResolver {
 		input._id = shapeIntoMongoObjectId(input._id);
 		return await this.boardArticleService.updateBoardArticle(memberId, input);
 	}
+
+	@Roles(MemberType.AGENT)
+	@UseGuards(RolesGuard)
+	@Query((returns) => BoardArticles)
+	public async getBoardArticles(
+		@Args('input') input: BoardArticlesInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<BoardArticles> {
+		console.log('Query: getBoardArticles', input);
+		return await this.boardArticleService.getBoardArticles(memberId, input);
+	}
 }
