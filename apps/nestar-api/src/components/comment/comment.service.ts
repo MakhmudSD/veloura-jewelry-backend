@@ -9,7 +9,7 @@ import { CommentGroup, CommentStatus } from '../../libs/enums/comment.enum';
 import { PropertyService } from '../property/property.service';
 import { Comments, Comment } from '../../libs/dto/comment/comment';
 import { CommentUpdate } from '../../libs/dto/comment/comment.update';
-import { T } from '../../libs/types/common';
+import { StatisticModifier, T } from '../../libs/types/common';
 import { lookupMember } from '../../libs/config';
 
 @Injectable()
@@ -101,5 +101,26 @@ export class CommentService {
 
 		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 		return result[0];
+	}
+
+	public async removeCommentByAdmin(commentId: ObjectId): Promise<Comment> {
+		const search: T = {
+			_id: commentId,
+			commentStatus: CommentStatus.DELETE,
+		};
+		const result = await this.commentModel.findOneAndDelete(search).exec();
+		if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
+
+		return result;
+	}
+
+	public async commentStatsEditor(input: StatisticModifier): Promise<Comment | null> {
+		const { _id, targetKey, modifier } = input;
+		const updated = await this.commentModel
+			.findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+			.lean()
+			.exec();
+
+		return updated as Comment | null;
 	}
 }
