@@ -1,31 +1,31 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/nestar-api/src",
+  "sourceRoot": "apps/veloura-api/src",
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "apps/nestar-api/tsconfig.app.json"
+    "tsConfigPath": "apps/veloura-api/tsconfig.app.json"
   },
   "monorepo": true,
-  "root": "apps/nestar-api",
+  "root": "apps/veloura-api",
   "projects": {
-    "nestar": {
+    "veloura": {
       "type": "application",
-      "root": "apps/nestar-api",
+      "root": "apps/veloura-api",
       "entryFile": "main",
-      "sourceRoot": "apps/nestar-api/src",
+      "sourceRoot": "apps/veloura-api/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/nestar-api/tsconfig.app.json"
+        "tsConfigPath": "apps/veloura-api/tsconfig.app.json"
       }
     },
-    "nestar-batch": {
+    "veloura-batch": {
       "type": "application",
-      "root": "apps/nestar-batch",
+      "root": "apps/veloura-batch",
       "entryFile": "main",
-      "sourceRoot": "apps/nestar-batch/src",
+      "sourceRoot": "apps/veloura-batch/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/nestar-batch/tsconfig.app.json"
+        "tsConfigPath": "apps/veloura-batch/tsconfig.app.json"
       }
     }
   }
