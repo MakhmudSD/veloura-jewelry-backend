@@ -1,0 +1,91 @@
+import { InputType, Field, Int } from '@nestjs/graphql';
+import { IsNotEmpty, IsOptional, Length, IsInt, Min, IsBoolean } from 'class-validator';
+import { ObjectId } from 'mongoose';
+import {
+	ProductMainCategory,
+	ProductJewelrySubCategory,
+	ProductStatus,
+	ProductMaterial,
+	ProductGender,
+	ProductLocation,
+} from '../../enums/product.enum';
+
+@InputType()
+export class ProductUpdate {
+	@IsNotEmpty()
+	@Field(() => String)
+	_id: ObjectId;
+
+	@IsOptional()
+	@Field(() => ProductMainCategory, { nullable: true })
+	productMainCategory?: ProductMainCategory;
+
+	@IsOptional()
+	@Field(() => ProductJewelrySubCategory, { nullable: true })
+	productJewelrySubCategory?: ProductJewelrySubCategory;
+
+	@IsOptional()
+	@Field(() => ProductLocation)
+	productLocation: ProductLocation;
+
+	@IsOptional()
+	@Field(() => ProductStatus, { nullable: true })
+	productStatus?: ProductStatus;
+
+	@IsOptional()
+	@Field(() => ProductMaterial, { nullable: true })
+	productMaterial?: ProductMaterial;
+
+	@IsOptional()
+	@Field(() => ProductGender, { nullable: true })
+	productGender?: ProductGender;
+
+	@IsOptional()
+	@Length(3, 100)
+	@Field(() => String, { nullable: true })
+	productTitle?: string;
+
+	@IsOptional()
+	@Field(() => Number, { nullable: true })
+	productPrice?: number;
+
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	productSize?: string;
+
+	@IsOptional()
+	@IsInt()
+	@Min(0)
+	@Field(() => Int, { nullable: true })
+	productStock?: number;
+
+	@IsOptional()
+	@Field(() => [String], { nullable: true })
+	productImages?: string[];
+
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	productDesc?: string;
+
+	@IsOptional()
+	@Field(() => Boolean, { nullable: true })
+	productIsLimitedEdition?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Field(() => Boolean, { nullable: true })
+  productExchangeable?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Field(() => Boolean, { nullable: true })
+  productRentalAvailable?: boolean;
+
+	soldAt?: Date;
+
+	deletedAt?: Date;
+
+	@IsOptional()
+	@Field(() => Date, { nullable: true })
+	constructedAt?: Date;
+}
