@@ -9,7 +9,7 @@ import { MemberModule } from '../member/member.module';
 
 @Module({
 	imports: [
-		MongooseModule.forFeature([{ name: 'Property', schema: ProductSchema }]),
+		MongooseModule.forFeature([{ name: 'Product', schema: ProductSchema }]),
 		AuthModule,
 		ViewModule,
 		MemberModule,

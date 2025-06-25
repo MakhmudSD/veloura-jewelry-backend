@@ -35,7 +35,7 @@ export class CommentService {
 			case CommentGroup.PRODUCT:
 				await this.productService.productStatsEditor({
 					_id: input.commentRefId,
-					targetKey: 'propertyComments',
+					targetKey: 'productComments',
 					modifier: 1,
 				});
 				break;

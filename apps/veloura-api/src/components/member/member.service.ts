@@ -6,7 +6,6 @@ import { Model, ObjectId } from 'mongoose';
 import { Member, Members } from '../../libs/dto/member/member';
 import { DesignerInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
 import { Direction, Message } from '../../libs/enums/common.enum';
-import { response } from 'express';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { ViewGroup } from '../../libs/enums/view.enum';
@@ -74,7 +73,7 @@ export class MemberService {
 				$in: [MemberStatus.ACTIVE, MemberStatus.BLOCK],
 			},
 		};
-		
+
 		const targetMember = await this.memberModel.findOne(search).exec();
 		if (!targetMember) {
 			console.error('Member not found or inactive:', targetId);
@@ -89,13 +88,12 @@ export class MemberService {
 				targetMember.memberViews++;
 			}
 		}
-		
 
 		//meLiked
 		//meFollowed
 		return targetMember;
 	}
-	
+
 	public async getAgents(memberId: ObjectId, input: DesignerInquiry): Promise<Members> {
 		const { text } = input.search;
 		const match: T = { memberType: MemberType.DESIGNER, memberStatus: MemberStatus.ACTIVE };

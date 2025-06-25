@@ -3,13 +3,7 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { InjectModel } from '@nestjs/mongoose';
 import { ViewService } from '../view/views.service';
 import { MemberService } from '../member/member.service';
-import {
-	DesignerProductsInquiry,
-	AllPropertiesInquiry,
-	ProductsInquiry,
-	ProductInput,
-	ProductStatus
-} from '../../libs/dto/product/product';
+import { ProductStatus } from '../../libs/dto/product/product';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { Products, Product } from '../../libs/dto/product/product';
 import { Model, ObjectId } from 'mongoose';
@@ -17,11 +11,17 @@ import { StatisticModifier, T } from '../../libs/types/common';
 import { ProductUpdate } from '../../libs/dto/product/product.input';
 import * as moment from 'moment';
 import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import {
+	ProductInput,
+	ProductsInquiry,
+	DesignerProductsInquiry,
+	AllProductsInquiry,
+} from '../../libs/dto/product/product.update';
 
 @Injectable()
 export class ProductService {
 	constructor(
-		@InjectModel('Property') private readonly productModel: Model<Product | null>,
+		@InjectModel('Product') private readonly productModel: Model<Product | null>,
 		private memberService: MemberService,
 		private viewService: ViewService,
 	) {}
@@ -153,7 +153,7 @@ export class ProductService {
 
 	/** ADMIN **/
 
-	public async getAllProductsByAdmin(memberId: ObjectId, input: AllPropertiesInquiry): Promise<Products> {
+	public async getAllProductsByAdmin(memberId: ObjectId, input: AllProductsInquiry): Promise<Products> {
 		const { productStatus, productLocationList } = input.search;
 		const match: T = {};
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
@@ -216,7 +216,7 @@ export class ProductService {
 	public async removeProductByAdmin(productId: ObjectId): Promise<Product> {
 		const search: T = {
 			_id: productId,
-			propertyStatus: ProductStatus.DELETE,
+			productStatus: ProductStatus.DELETE,
 		};
 		const result = await this.productModel.findOneAndDelete(search).exec();
 		if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
@@ -228,54 +228,54 @@ export class ProductService {
 	private shapeMatchQuery(match: T, input: ProductsInquiry): void {
 		const search = input.search;
 		if (!search) return;
-	
+
 		const {
 			memberId,
 			locationList,
-			typeList,         // productMainCategory
+			categoryList, // productMainCategory
 			pricesRange,
 			dateRange,
 			options,
 			text,
 		} = input.search;
-	
+
 		if (memberId) {
 			match.memberId = shapeIntoMongoObjectId(memberId);
 		}
-	
+
 		if (locationList) {
 			match.productLocation = { $in: locationList };
 		}
-	
-		if (typeList) {
-			match.productMainCategory = { $in: typeList };
+
+		if (categoryList) {
+			match.productMainCategory = { $in: categoryList };
 		}
-	
+
 		if (pricesRange) {
 			match.productPrice = {
 				$gte: pricesRange.start,
 				$lte: pricesRange.end,
 			};
 		}
-	
+
 		if (dateRange) {
 			match.createdAt = {
 				$gte: dateRange.start,
 				$lte: dateRange.end,
 			};
 		}
-	
+
 		if (text) {
 			match.productTitle = {
 				$regex: new RegExp(text, 'i'),
 			};
 		}
-	
+
 		if (options) {
 			match['$or'] = options.map((key) => ({ [key]: true }));
 		}
 	}
-	
+
 	public async productStatsEditor(input: StatisticModifier): Promise<Product | null> {
 		const { _id, targetKey, modifier } = input;
 		const updated = await this.productModel

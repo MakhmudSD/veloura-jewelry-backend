@@ -7,60 +7,60 @@ import { Direction } from '../../enums/common.enum';
 
 @InputType()
 export class ProductInput {
-  @IsNotEmpty()
-  @Field(() => ProductMainCategory)
-  productMainCategory: ProductMainCategory;
+	@IsNotEmpty()
+	@Field(() => ProductMainCategory)
+	productMainCategory: ProductMainCategory;
 
-  @IsNotEmpty()
-  @Field(() => ProductLocation)
-  productLocation: ProductLocation;
+	@IsNotEmpty()
+	@Field(() => ProductLocation)
+	productLocation: ProductLocation;
 
-  @IsNotEmpty()
-  @Length(3, 100)
-  @Field(() => String)
-  productOrigin: string;
+	@IsNotEmpty()
+	@Length(3, 100)
+	@Field(() => String)
+	productOrigin: string;
 
-  @IsNotEmpty()
-  @Length(3, 100)
-  @Field(() => String)
-  productTitle: string;
+	@IsNotEmpty()
+	@Length(3, 100)
+	@Field(() => String)
+	productTitle: string;
 
-  @IsNotEmpty()
-  @Field(() => Number)
-  productPrice: number;
+	@IsNotEmpty()
+	@Field(() => Number)
+	productPrice: number;
 
-  @IsOptional()
-  @Field(() => String, { nullable: true })
-  productSize?: string;
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	productSize?: string;
 
-  @IsNotEmpty()
-  @IsInt()
-  @Min(0)
-  @Field(() => Int)
-  productStock: number;
+	@IsNotEmpty()
+	@IsInt()
+	@Min(0)
+	@Field(() => Int)
+	productStock: number;
 
-  @IsNotEmpty()
-  @Field(() => [String])
-  productImages: string[];
+	@IsNotEmpty()
+	@Field(() => [String])
+	productImages: string[];
 
-  @IsOptional()
-  @Length(5, 500)
-  @Field(() => String, { nullable: true })
-  productDesc?: string;
+	@IsOptional()
+	@Length(5, 500)
+	@Field(() => String, { nullable: true })
+	productDesc?: string;
 
-  @IsOptional()
-  @Field(() => Boolean, { nullable: true })
-  productIsLimitedEdition?: boolean;
+	@IsOptional()
+	@Field(() => Boolean, { nullable: true })
+	productIsLimitedEdition?: boolean;
 
-  @IsOptional()
-  @IsBoolean()
-  @Field(() => Boolean, { nullable: true })
-  productExchangeable?: boolean;
+	@IsOptional()
+	@IsBoolean()
+	@Field(() => Boolean, { nullable: true })
+	productExchangeable?: boolean;
 
-  @IsOptional()
-  @IsBoolean()
-  @Field(() => Boolean, { nullable: true })
-  productRentalAvailable?: boolean;
+	@IsOptional()
+	@IsBoolean()
+	@Field(() => Boolean, { nullable: true })
+	productRentalAvailable?: boolean;
 
 	memberId?: ObjectId;
 
@@ -80,13 +80,12 @@ export class PricesRange {
 
 @InputType()
 export class DateRange {
-  @Field(() => Date)
-  start: Date;
+	@Field(() => Date)
+	start: Date;
 
-  @Field(() => Date)
-  end: Date;
+	@Field(() => Date)
+	end: Date;
 }
-
 
 @InputType()
 class PISearch {
@@ -95,22 +94,26 @@ class PISearch {
 	memberId?: ObjectId;
 
 	@IsOptional()
+	@Field(() => [ProductLocation], { nullable: true })
+	locationList?: ProductLocation[];
+
+	@IsOptional()
 	@Field(() => [ProductMainCategory], { nullable: true })
 	categoryList?: ProductMainCategory[];
-  
+
 	@IsOptional()
 	@IsIn(availableProductOptions, { each: true })
 	@Field(() => [String], { nullable: true })
 	options?: string[];
-  
+
 	@IsOptional()
 	@Field(() => PricesRange, { nullable: true })
 	pricesRange?: PricesRange;
-  
+
 	@IsOptional()
 	@Field(() => DateRange, { nullable: true })
 	dateRange?: DateRange;
-  
+
 	@IsOptional()
 	@Field(() => String, { nullable: true })
 	text?: string;
@@ -122,17 +125,17 @@ export class ProductsInquiry {
 	@Min(1)
 	@Field(() => Int)
 	page: number;
-  
+
 	@IsNotEmpty()
 	@Min(1)
 	@Field(() => Int)
 	limit: number;
-  
+
 	@IsOptional()
 	@IsIn(availableProductSorts)
 	@Field(() => String, { nullable: true })
 	sort?: string;
-  
+
 	@IsOptional()
 	@Field(() => Direction, { nullable: true })
 	direction?: Direction;
@@ -149,24 +152,23 @@ class APISearch {
 	productStatus?: ProductStatus;
 }
 
-
 @InputType()
 export class DesignerProductsInquiry {
 	@IsNotEmpty()
 	@Min(1)
 	@Field(() => Int)
 	page: number;
-  
+
 	@IsNotEmpty()
 	@Min(1)
 	@Field(() => Int)
 	limit: number;
-  
+
 	@IsOptional()
 	@IsIn(availableProductSorts)
 	@Field(() => String, { nullable: true })
 	sort?: string;
-  
+
 	@IsOptional()
 	@Field(() => Direction, { nullable: true })
 	direction?: Direction;
