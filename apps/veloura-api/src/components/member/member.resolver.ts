@@ -71,12 +71,23 @@ export class MemberResolver {
 
 	@UseGuards(WithoutGuard)
 	@Query(() => Members)
-	public async getAgents(
+	public async getDesigners(
 		@Args('input') input: DesignerInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Members> {
-		console.log('Query: getAgents');
-		return await this.memberService.getAgents(memberId, input);
+		console.log('Query: getDesigners');
+		return await this.memberService.getDesigners(memberId, input);
+	}
+
+	@UseGuards(AuthGuard)
+	@Mutation(() => Member)
+	public async likeTargetMember(
+		@Args('memberId') input: string,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Member> {
+		console.log('Mutation: likeTargetMember');
+		const likeRefId = shapeIntoMongoObjectId(input);
+		return await this.memberService.likeTargetMember(memberId, likeRefId);
 	}
 	/** ADMIN **/
 

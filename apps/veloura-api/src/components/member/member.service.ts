@@ -10,13 +10,21 @@ import { MemberUpdate } from '../../libs/dto/member/member.update';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { ViewService } from '../view/views.service';
+import { LikeService } from '../like/like.service';
+import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { lookupAuthMemberLiked } from '../../libs/config';
 
 @Injectable()
 export class MemberService {
 	constructor(
 		@InjectModel('Member') private readonly memberModel: Model<Member>,
+		@InjectModel('Member') private readonly followModel: Model<Follower | Following>,
+
 		private authService: AuthService,
 		private viewService: ViewService,
+		private likeService: LikeService,
 	) {}
 
 	public async signup(input: MemberInput): Promise<Member> {
@@ -66,6 +74,7 @@ export class MemberService {
 		return result;
 	}
 
+	// getMember
 	public async getMember(memberId: ObjectId | null, targetId: ObjectId): Promise<Member> {
 		const search: T = {
 			_id: targetId,
@@ -73,12 +82,8 @@ export class MemberService {
 				$in: [MemberStatus.ACTIVE, MemberStatus.BLOCK],
 			},
 		};
-
-		const targetMember = await this.memberModel.findOne(search).exec();
-		if (!targetMember) {
-			console.error('Member not found or inactive:', targetId);
-			throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-		}
+		const targetMember: any = await this.memberModel.findOne(search).lean().exec();
+		if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
 		if (memberId) {
 			const viewInput = { memberId: memberId, viewRefId: targetId, viewGroup: ViewGroup.MEMBER };
@@ -87,14 +92,21 @@ export class MemberService {
 				await this.memberModel.findOneAndUpdate(search, { $inc: { memberViews: 1 } }, { new: true }).exec();
 				targetMember.memberViews++;
 			}
-		}
 
-		//meLiked
-		//meFollowed
+			const likeInput: LikeInput = { memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
+			targetMember.meLiked = await this.likeService.checkLikeExistence(likeInput);
+			targetMember.meFollowed = await this.checkSubscription(memberId, targetId);
+		}
 		return targetMember;
 	}
 
-	public async getAgents(memberId: ObjectId, input: DesignerInquiry): Promise<Members> {
+	// checkSubscription
+	private async checkSubscription(followingId: ObjectId, followerId: ObjectId): Promise<MeFollowed[]> {
+		const result = await this.followModel.findOne({ followerId: followerId, followingId: followingId }).exec();
+		return result ? [{ followerId: followerId, followingId: followingId, myFollowing: true }] : [];
+	}
+
+	public async getDesigners(memberId: ObjectId, input: DesignerInquiry): Promise<Members> {
 		const { text } = input.search;
 		const match: T = { memberType: MemberType.DESIGNER, memberStatus: MemberStatus.ACTIVE };
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
@@ -108,7 +120,7 @@ export class MemberService {
 				{ $sort: sort },
 				{
 					$facet: {
-						list: [{ $skip: (input.page - 1) * input.limit }, { $limit: input.limit }],
+						list: [{ $skip: (input.page - 1) * input.limit }, { $limit: input.limit }, lookupAuthMemberLiked(memberId)],
 						metaCounter: [{ $count: 'total' }],
 					},
 				},
@@ -116,6 +128,24 @@ export class MemberService {
 			.exec();
 		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 		return result[0];
+	}
+
+	// likeTargetMember
+	public async likeTargetMember(memberId: ObjectId, likeRefId: ObjectId): Promise<Member> {
+		const target = await this.memberModel.findOne({ _id: likeRefId, memberStatus: MemberStatus.ACTIVE });
+		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		const input: LikeInput = {
+			memberId: memberId,
+			likeRefId: likeRefId,
+			likeGroup: LikeGroup.MEMBER,
+		};
+
+		const modifier: number = await this.likeService.toggleLike(input);
+		const result = await this.memberStatsEditor({ _id: likeRefId, targetKey: 'memberLikes', modifier: modifier });
+
+		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+		return result;
 	}
 
 	/** ADMIN **/
@@ -158,7 +188,8 @@ export class MemberService {
 		console.log('executed');
 		const { _id, targetKey, modifier } = input;
 		return (
-			await this, this.memberModel.findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true }).exec()
+			await this,
+			this.memberModel.findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true }).exec()
 		);
 	}
 }
