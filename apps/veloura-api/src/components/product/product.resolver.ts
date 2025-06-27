@@ -15,8 +15,8 @@ import {
 	AllProductsInquiry,
 	ProductsInquiry,
 	ProductInput,
-} from '../../libs/dto/product/product.update';
-import { ProductUpdate } from '../../libs/dto/product/product.input';
+} from '../../libs/dto/product/product.input';
+import { ProductUpdate } from '../../libs/dto/product/product.update';
 
 @Resolver()
 export class ProductResolver {

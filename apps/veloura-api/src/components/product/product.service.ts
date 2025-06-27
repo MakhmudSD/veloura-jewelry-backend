@@ -8,7 +8,7 @@ import { Direction, Message } from '../../libs/enums/common.enum';
 import { Products, Product } from '../../libs/dto/product/product';
 import { Model, ObjectId } from 'mongoose';
 import { StatisticModifier, T } from '../../libs/types/common';
-import { ProductUpdate } from '../../libs/dto/product/product.input';
+import { ProductUpdate } from '../../libs/dto/product/product.update';
 import * as moment from 'moment';
 import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import {
@@ -16,7 +16,7 @@ import {
 	ProductsInquiry,
 	DesignerProductsInquiry,
 	AllProductsInquiry,
-} from '../../libs/dto/product/product.update';
+} from '../../libs/dto/product/product.input';
 
 @Injectable()
 export class ProductService {
