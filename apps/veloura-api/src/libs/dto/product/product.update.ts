@@ -25,8 +25,8 @@ export class ProductUpdate {
 	productJewelrySubCategory?: ProductJewelrySubCategory;
 
 	@IsOptional()
-	@Field(() => ProductLocation)
-	productLocation: ProductLocation;
+	@Field(() => ProductLocation, { nullable: true })
+	productLocation?: ProductLocation;
 
 	@IsOptional()
 	@Field(() => ProductStatus, { nullable: true })

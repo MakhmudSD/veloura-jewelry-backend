@@ -15,8 +15,10 @@ import {
 	AllProductsInquiry,
 	ProductsInquiry,
 	ProductInput,
+	OrdinaryInquiry,
 } from '../../libs/dto/product/product.input';
 import { ProductUpdate } from '../../libs/dto/product/product.update';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Resolver()
 export class ProductResolver {
@@ -36,13 +38,21 @@ export class ProductResolver {
 
 	@UseGuards(WithoutGuard)
 	@Query((returns) => Product)
-	public async getProduct(
-		@Args('productId') input: string,
-		@AuthMember('_id') memberId: ObjectId,
-	): Promise<Product> {
+	public async getProduct(@Args('productId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Product> {
 		console.log('Query: getProduct');
 		const productId = shapeIntoMongoObjectId(input);
 		return await this.productService.getProduct(memberId, productId);
+	}
+
+	@UseGuards(AuthGuard)
+	@Mutation(() => Product)
+	public async likeTargetProduct(
+		@Args('propertyId') input: string,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Product> {
+		console.log('Mutation: likeTargetProduct');
+		const likeRefId = shapeIntoMongoObjectId(input);
+		return await this.productService.likeTargetProduct(memberId, likeRefId);
 	}
 
 	@Roles(MemberType.DESIGNER)
@@ -65,6 +75,26 @@ export class ProductResolver {
 	): Promise<Products> {
 		console.log('Query: getProducts');
 		return await this.productService.getProducts(memberId, input);
+	}
+
+	@UseGuards(AuthGuard)
+	@Query((returns) => Products)
+	public async getFavorites(
+		@Args('input') input: OrdinaryInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Products> {
+		console.log('Query: getFavorites', input);
+		return await this.productService.getFavorites(memberId, input);
+	}
+
+	@UseGuards(AuthGuard)
+	@Query((returns) => Products)
+	public async getVisited(
+		@Args('input') input: OrdinaryInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Products> {
+		console.log('Query: getVisited', input);
+		return await this.productService.getVisited(memberId, input);
 	}
 
 	@Roles(MemberType.DESIGNER)

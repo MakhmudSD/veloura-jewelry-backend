@@ -1,6 +1,6 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { IsIn, IsInt, IsNotEmpty, IsOptional, Length, Min, IsBoolean } from 'class-validator';
-import { ProductStatus, ProductMainCategory, ProductLocation } from '../../enums/product.enum';
+import { ProductStatus, ProductMainCategory, ProductLocation, ProductJewelrySubCategory } from '../../enums/product.enum';
 import { ObjectId } from 'mongoose';
 import { availableProductOptions, availableProductSorts } from '../../config';
 import { Direction } from '../../enums/common.enum';
@@ -10,6 +10,10 @@ export class ProductInput {
 	@IsNotEmpty()
 	@Field(() => ProductMainCategory)
 	productMainCategory: ProductMainCategory;
+
+	@IsNotEmpty()
+	@Field(() => ProductJewelrySubCategory)
+	productJewelrySubCategory: ProductJewelrySubCategory;
 
 	@IsNotEmpty()
 	@Field(() => ProductLocation)
@@ -23,6 +27,11 @@ export class ProductInput {
 	@IsNotEmpty()
 	@Length(3, 100)
 	@Field(() => String)
+	productMaterial: string;
+
+	@IsNotEmpty()
+	@Length(3, 100)
+	@Field(() => String)
 	productTitle: string;
 
 	@IsNotEmpty()
@@ -30,8 +39,8 @@ export class ProductInput {
 	productPrice: number;
 
 	@IsOptional()
-	@Field(() => String, { nullable: true })
-	productSize?: string;
+	@Field(() => Number)
+	productSize?: Number;
 
 	@IsNotEmpty()
 	@IsInt()

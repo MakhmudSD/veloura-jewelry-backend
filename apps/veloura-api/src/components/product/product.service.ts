@@ -10,20 +10,25 @@ import { Model, ObjectId } from 'mongoose';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { ProductUpdate } from '../../libs/dto/product/product.update';
 import * as moment from 'moment';
-import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import {
 	ProductInput,
 	ProductsInquiry,
 	DesignerProductsInquiry,
 	AllProductsInquiry,
+	OrdinaryInquiry,
 } from '../../libs/dto/product/product.input';
+import { LikeService } from '../like/like.service';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { LikeInput } from '../../libs/dto/like/like.input';
 
 @Injectable()
 export class ProductService {
 	constructor(
 		@InjectModel('Product') private readonly productModel: Model<Product | null>,
-		private memberService: MemberService,
-		private viewService: ViewService,
+		private readonly memberService: MemberService,
+		private readonly viewService: ViewService,
+		private readonly likeService: LikeService,
 	) {}
 
 	public async createProduct(input: ProductInput): Promise<Product> {
@@ -55,10 +60,35 @@ export class ProductService {
 			}
 		}
 
+		const likeInput = { memberId: memberId, likeRefId: productId, likeGroup: LikeGroup.PRODUCT };
+		targetProduct.meLiked = await this.likeService.checkLikeExistence(likeInput as LikeInput);
+
 		targetProduct.memberData = await this.memberService.getMember(null, targetProduct.memberId);
 		return targetProduct;
 	}
 
+	// likeTargetProduct
+	public async likeTargetProduct(memberId: ObjectId, likeRefId: ObjectId): Promise<Product> {
+		const target: Product | null = await this.productModel.findOne({
+			_id: likeRefId,
+			propertyStatus: ProductStatus.AVAILABLE,
+		});
+		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+		const input: LikeInput = {
+			memberId: memberId,
+			likeRefId: likeRefId,
+			likeGroup: LikeGroup.PRODUCT,
+		};
+
+		const modifier: number = await this.likeService.toggleLike(input);
+		const result = await this.productStatsEditor({ _id: likeRefId, targetKey: 'productLikes', modifier: modifier });
+
+		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+		return result;
+	}
+
+	// updateProduct
 	public async updateProduct(memberId: ObjectId, input: ProductUpdate): Promise<Product> {
 		const { productStatus } = input;
 		if (productStatus === ProductStatus.SOLD) {
@@ -88,6 +118,7 @@ export class ProductService {
 		return result;
 	}
 
+	// getProducts
 	public async getProducts(memberId: ObjectId, input: ProductsInquiry): Promise<Products> {
 		const match: T = { productStatus: ProductStatus.AVAILABLE };
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
@@ -104,7 +135,7 @@ export class ProductService {
 						list: [
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
-							// meLiked
+							lookupAuthMemberLiked(memberId),
 							lookupMember,
 							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
 						],
@@ -119,6 +150,17 @@ export class ProductService {
 		return result[0];
 	}
 
+	// getFavorites
+	public async getFavorites(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
+		return await this.likeService.getFavoriteProducts(memberId, input);
+	}
+
+	// getVisited
+	public async getVisited(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
+		return (await this, this.viewService.getVisitedProducts(memberId, input));
+	}
+
+	// getDesignerProducts
 	public async getDesignerProducts(memberId: ObjectId, input: DesignerProductsInquiry): Promise<Products> {
 		const { productStatus } = input.search;
 		if (productStatus === ProductStatus.DELETE) throw new InternalServerErrorException(Message.NOT_ALLOWED_REQUEST);
@@ -169,7 +211,7 @@ export class ProductService {
 						list: [
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
-							// meLiked
+							lookupAuthMemberLiked(memberId),
 							lookupMember,
 							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
 						],

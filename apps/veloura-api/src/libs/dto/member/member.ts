@@ -36,7 +36,7 @@ export class Member {
 	@Field(() => String, { nullable: true })
 	memberDesc?: string;
 
-	@Field(() => Int)
+	@Field(() => Int, { nullable: true})
 	memberProducts?: number;
 
 	@Field(() => Int)
@@ -70,7 +70,7 @@ export class Member {
 	memberBlocks: number;
 
 	@Field(() => Date, { nullable: true })
-	deletedAt?: Date;
+	deletedAt: Date;
 
 	@Field(() => Date)
 	createdAt: Date;
@@ -81,8 +81,8 @@ export class Member {
 	@Field(() => String, { nullable: true })
 	accessToken?: String;
 
-	@Field(() => Member, {nullable: true})
-	memberData?: Member
+	@Field(() => Member, { nullable: true })
+	memberData?: Member;
 }
 
 @ObjectType()

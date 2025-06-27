@@ -43,7 +43,7 @@ export class LikeService {
 	}
 
 	// getFavoriteProperties
-	public async getFavoriteProperties(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
+	public async getFavoriteProducts(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
 		const { page, limit } = input;
 		const match: T = { likeGroup: LikeGroup.PRODUCT, memberId: memberId };
 

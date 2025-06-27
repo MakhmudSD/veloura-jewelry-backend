@@ -9,6 +9,7 @@ import {
 	ProductLocation,
 } from '../../enums/product.enum';
 import { Member, TotalCounter } from '../member/member';
+import { MeLiked } from '../like/like';
 
 @ObjectType()
 export class Product {
@@ -18,11 +19,11 @@ export class Product {
 	@Field(() => ProductMainCategory)
 	productMainCategory: ProductMainCategory;
 
-	@Field(() => ProductJewelrySubCategory, { nullable: true })
-	productJewelrySubCategory?: ProductJewelrySubCategory;
+	@Field(() => ProductJewelrySubCategory)
+	productJewelrySubCategory: ProductJewelrySubCategory;
 
-	@Field(() => [ProductLocation], { nullable: true })
-	productLocationList?: ProductLocation[];
+	@Field(() => ProductLocation, { nullable: true })
+	productLocation: ProductLocation[];
 
 	@Field(() => ProductStatus)
 	productStatus: ProductStatus;
@@ -39,8 +40,8 @@ export class Product {
 	@Field(() => Number)
 	productPrice: number;
 
-	@Field(() => String, { nullable: true })
-	productSize?: string;
+	@Field(() => Number, {nullable: true})
+	productSize: number;
 
 	@Field(() => Int)
 	productStock: number;
@@ -57,9 +58,6 @@ export class Product {
 	@Field(() => Int)
 	productRank: number;
 
-	@Field(() => [String])
-	productImages: string[];
-
 	@Field(() => String, { nullable: true })
 	productDesc?: string;
 
@@ -71,6 +69,9 @@ export class Product {
 
 	@Field(() => Boolean)
 	productRentalAvailable: boolean;
+
+	@Field(() => [String])
+	productImages: string[];
 
 	@Field(() => String)
 	memberId: ObjectId;
@@ -89,6 +90,9 @@ export class Product {
 
 	@Field(() => Member, { nullable: true })
 	memberData?: Member;
+
+	@Field(() => [MeLiked], {nullable: true})
+	meLiked?: MeLiked[];
 }
 
 @ObjectType()
