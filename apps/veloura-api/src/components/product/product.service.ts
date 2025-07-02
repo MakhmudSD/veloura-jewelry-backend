@@ -31,6 +31,10 @@ export class ProductService {
 		private readonly likeService: LikeService,
 	) {}
 
+	public async findById(id: ObjectId): Promise<Product | null> {
+		return this.productModel.findById(id).exec();
+	  }
+
 	public async createProduct(input: ProductInput): Promise<Product> {
 		try {
 			const result: any = await this.productModel.create(input);
@@ -42,7 +46,7 @@ export class ProductService {
 		}
 	}
 
-	public async getProduct(memberId: ObjectId, productId: ObjectId): Promise<Product> {
+	public async getProduct(memberId: ObjectId | null, productId: ObjectId): Promise<Product> {
 		const search: T = {
 			_id: productId,
 			productStatus: ProductStatus.AVAILABLE,

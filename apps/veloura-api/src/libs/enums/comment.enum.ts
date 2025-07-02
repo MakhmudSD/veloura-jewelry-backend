@@ -1,4 +1,5 @@
 import { registerEnumType } from '@nestjs/graphql';
+import { NotificationGroup } from './notification.enum';
 
 export enum CommentStatus {
 	ACTIVE = 'ACTIVE',
@@ -15,4 +16,15 @@ export enum CommentGroup {
 }
 registerEnumType(CommentGroup, {
 	name: 'CommentGroup',
+});
+
+
+export const commentToNotificationGroupMap: Record<CommentGroup, NotificationGroup> = {
+	[CommentGroup.PRODUCT]: NotificationGroup.PRODUCT,
+	[CommentGroup.ARTICLE]: NotificationGroup.ARTICLE,
+	[CommentGroup.MEMBER]: NotificationGroup.MEMBER,
+  };
+
+  registerEnumType(commentToNotificationGroupMap, {
+	name: 'commentToNotificationGroupMap',
 });

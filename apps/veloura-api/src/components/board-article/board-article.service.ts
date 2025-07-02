@@ -24,6 +24,10 @@ export class BoardArticleService {
 		private viewService: ViewService,
 	) {}
 
+	public async findById(id: ObjectId): Promise<BoardArticle | null> {
+		return this.boardArticleModel.findById(id).exec();
+	  }
+	  
 	public async createBoardArticle(input: BoardArticleInput): Promise<BoardArticle> {
 		try {
 			const result: any = await this.boardArticleModel.create(input);

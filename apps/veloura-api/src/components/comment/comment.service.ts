@@ -3,14 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { MemberService } from '../member/member.service';
 import { BoardArticleService } from '../board-article/board-article.service';
+import { ProductService } from '../product/product.service';
+import { NotificationService } from '../notification/notification.service'; // <- import here
 import { CommentInput, CommentsInquiry } from '../../libs/dto/comment/comment.input';
 import { Direction, Message } from '../../libs/enums/common.enum';
-import { CommentGroup, CommentStatus } from '../../libs/enums/comment.enum';
-import { ProductService } from '../product/product.service';
+import { CommentGroup, CommentStatus, commentToNotificationGroupMap } from '../../libs/enums/comment.enum';
 import { Comments, Comment } from '../../libs/dto/comment/comment';
 import { CommentUpdate } from '../../libs/dto/comment/comment.update';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { lookupMember } from '../../libs/config';
+import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class CommentService {
@@ -19,6 +21,7 @@ export class CommentService {
 		private memberService: MemberService,
 		private productService: ProductService,
 		private boardArticleService: BoardArticleService,
+		private notificationService: NotificationService, // <- inject here
 	) {}
 
 	// createComment
@@ -34,11 +37,47 @@ export class CommentService {
 			throw new BadRequestException(Message.CREATE_FAILED);
 		}
 
+		// Notification logic
+		try {
+			let receiverId: ObjectId | undefined;
+
+			switch (input.commentGroup) {
+				case CommentGroup.PRODUCT:
+					const product = await this.productService.findById(input.commentRefId);
+					receiverId = product?.memberId;
+					break;
+				case CommentGroup.ARTICLE:
+					const article = await this.boardArticleService.findById(input.commentRefId);
+					receiverId = article?.authorId;
+					break;
+				case CommentGroup.MEMBER:
+					receiverId = input.commentRefId;
+					break;
+			}
+
+			if (receiverId && receiverId.toString() !== memberId.toString()) {
+				await this.notificationService.createNotification({
+					authorId: memberId,
+					receiverId,
+					notificationType: NotificationType.COMMENT,
+					notificationGroup: commentToNotificationGroupMap[input.commentGroup],
+					notificationTitle: input.parentId ? 'New reply on your comment' : 'New comment',
+					notificationDesc: input.commentContent || '',
+					productId: input.commentGroup === CommentGroup.PRODUCT ? input.commentRefId : undefined,
+					articleId: input.commentGroup === CommentGroup.ARTICLE ? input.commentRefId : undefined,
+				});
+			}
+		} catch (err) {
+			console.error('Failed to create notification for comment:', err);
+			// Fail silently to not block comment creation
+		}
+
 		// If the comment is a reply, you can do extra logic here:
 		if (input.parentId) {
 			console.log(`New reply created under parent comment: ${input.parentId}`);
-			// TODO: Fire a notification here later!
+			// TODO: any extra reply logic here
 		}
+
 		switch (input.commentGroup) {
 			case CommentGroup.PRODUCT:
 				await this.productService.productStatsEditor({
@@ -99,7 +138,6 @@ export class CommentService {
 						list: [
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
-							//meLiked
 							lookupMember,
 							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
 							{

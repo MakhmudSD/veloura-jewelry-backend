@@ -12,12 +12,17 @@ import {
 } from '../../libs/config';
 import { FollowInquiry } from '../../libs/dto/follow/follow.input';
 import { T } from '../../libs/types/common';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationType, NotificationGroup } from '../../libs/enums/notification.enum';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 @Injectable()
 export class FollowService {
 	constructor(
 		@InjectModel('Follow') private readonly followModel: Model<Follower | Following>,
 		private memberService: MemberService,
+		private notificationService: NotificationService,
+		private notificationGateway: NotificationGateway,
 	) {}
 
 	// subscribe
@@ -32,6 +37,18 @@ export class FollowService {
 
 		await this.memberService.memberStatsEditor({ _id: followingId, targetKey: 'memberFollowings', modifier: 1 });
 		await this.memberService.memberStatsEditor({ _id: followerId, targetKey: 'memberFollowers', modifier: 1 });
+
+		const notification = await this.notificationService.createNotification({
+			notificationType: NotificationType.LIKE, // or NotificationType.FOLLOW
+			notificationGroup: NotificationGroup.MEMBER,
+			notificationTitle: 'New Follower!',
+			notificationDesc: `You have a new follower.`,
+			authorId: followerId,
+			receiverId: followingId,
+		});
+
+		// ✅ Emit via WebSocket
+		this.notificationGateway.sendNotification(followingId.toString(), notification);
 
 		return result;
 	}

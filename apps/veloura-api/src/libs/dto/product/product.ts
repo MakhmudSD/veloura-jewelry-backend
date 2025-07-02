@@ -74,6 +74,9 @@ export class Product {
 	productImages: string[];
 
 	@Field(() => String)
+	authorId: ObjectId;
+
+	@Field(() => String)
 	memberId: ObjectId;
 
 	@Field(() => Date, { nullable: true })

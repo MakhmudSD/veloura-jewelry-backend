@@ -9,10 +9,17 @@ import { OrdinaryInquiry } from '../../libs/dto/product/product.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { lookupFavorite } from '../../libs/config';
 import { Products } from '../../libs/dto/product/product';
+import { NotificationService } from '../notification/notification.service'; // import NotificationService
+import { NotificationType, NotificationGroup } from '../../libs/enums/notification.enum';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class LikeService {
-	constructor(@InjectModel('Like') private readonly likeModel: Model<Like>) {}
+	constructor(
+		@InjectModel('Like') private readonly likeModel: Model<Like>,
+		private readonly productService: ProductService,
+		private readonly notificationService: NotificationService, // inject NotificationService
+	) {}
 
 	// toggleLike
 	public async toggleLike(input: LikeInput): Promise<number> {
@@ -26,6 +33,20 @@ export class LikeService {
 		} else {
 			try {
 				await this.likeModel.create(input);
+
+				// ---- NOTIFICATION CREATION START ----
+				// Create notification ONLY when a like is added (modifier = 1)
+				await this.notificationService.createNotification({
+					notificationType: NotificationType.LIKE,
+					notificationGroup: this.mapLikeGroupToNotificationGroup(input.likeGroup),
+					notificationTitle: 'Someone liked your content',
+					notificationDesc: `User ${input.memberId} liked your ${input.likeGroup.toLowerCase()}`,
+					authorId: input.memberId,
+					receiverId: await this.getOwnerIdForLike(input), // function to get content owner ID
+					productId: input.likeGroup === LikeGroup.PRODUCT ? input.likeRefId : undefined,
+					// you can add articleId or commentId here similarly if needed
+				});
+				// ---- NOTIFICATION CREATION END ----
 			} catch (err) {
 				console.log('ERROR on service model of toggleLike', err.message);
 				throw new BadRequestException(Message.CREATE_FAILED);
@@ -35,14 +56,41 @@ export class LikeService {
 		return modifier;
 	}
 
-	// checkLikeExistence
+	// Helper to map LikeGroup to NotificationGroup
+	private mapLikeGroupToNotificationGroup(likeGroup: LikeGroup): NotificationGroup {
+		switch (likeGroup) {
+			case LikeGroup.PRODUCT:
+				return NotificationGroup.PRODUCT;
+			case LikeGroup.ARTICLE:
+				return NotificationGroup.ARTICLE;
+			case LikeGroup.MEMBER:
+				return NotificationGroup.MEMBER;
+			default:
+				return NotificationGroup.MEMBER;
+		}
+	}
+
+	private async getOwnerIdForLike(input: LikeInput): Promise<ObjectId> {
+		// Determine who owns the thing being liked.
+		switch (input.likeGroup) {
+			case LikeGroup.MEMBER:
+				return input.likeRefId; // when you like a member, that member is the owner
+			case LikeGroup.PRODUCT:
+				const product = await this.productService.getProduct(null, input.likeRefId);
+				return product.authorId; // adjust to your schema
+			// Add other groups...
+			default:
+				throw new BadRequestException('Unsupported like group');
+		}
+	}
+
+	// ...existing methods below unchanged...
 	public async checkLikeExistence(input: LikeInput): Promise<MeLiked[]> {
 		const { memberId, likeRefId } = input;
 		const result = await this.likeModel.findOne({ memberId: memberId, likeRefId: likeRefId }).exec();
 		return result ? [{ memberId: memberId, likeRefId: likeRefId, myFavorite: true }] : [];
 	}
 
-	// getFavoriteProperties
 	public async getFavoriteProducts(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
 		const { page, limit } = input;
 		const match: T = { likeGroup: LikeGroup.PRODUCT, memberId: memberId };
@@ -62,7 +110,6 @@ export class LikeService {
 				{ $unwind: '$favoriteProduct' },
 				{
 					$facet: {
-						// integrate properties information to the list
 						list: [
 							{ $skip: (page - 1) * limit },
 							{ $limit: limit },

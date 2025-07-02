@@ -33,6 +33,9 @@ export class BoardArticle {
 	articleComments: number;
 
 	@Field(() => String)
+	authorId: ObjectId;
+
+	@Field(() => String)
 	memberId: ObjectId;
 
 	@Field(() => Date)
