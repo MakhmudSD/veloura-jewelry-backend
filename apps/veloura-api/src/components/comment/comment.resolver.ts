@@ -50,6 +50,16 @@ export class CommentResolver {
 		return result;
 	}
 
+	@UseGuards(AuthGuard)
+	@Mutation(() => Comment)
+	public async removeComment(
+	@Args('commentId') commentId: string,
+	@AuthMember('_id') memberId: ObjectId,
+	): Promise<Comment> {
+	const result = await this.commentService.removeCommentByUser(memberId, shapeIntoMongoObjectId(commentId));
+	return result;
+	}
+
 	/** ADMIN **/
 
 	@Roles(MemberType.ADMIN)

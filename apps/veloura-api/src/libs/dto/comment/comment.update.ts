@@ -17,4 +17,11 @@ export class CommentUpdate {
 	@Length(1, 100)
 	@Field(() => String, { nullable: true })
 	commentContent?: string;
+
+	/** NEW: optional parentId **/
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	parentId?: ObjectId;
+
+	memberId: ObjectId;
 }

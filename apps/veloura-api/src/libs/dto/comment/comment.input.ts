@@ -20,6 +20,10 @@ export class CommentInput {
 	@Field(() => String)
 	commentRefId: ObjectId;
 
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	parentId?: ObjectId;
+
 	memberId?: ObjectId;
 }
 
