@@ -16,7 +16,6 @@ import { MemberModule } from '../member/member.module';
 			},
 		]),
 		AuthModule,
-		// MemberModule, // optional if your service needs it
 	],
 	providers: [NotificationService, NotificationResolver, NotificationGateway],
 	exports: [NotificationService, NotificationGateway],

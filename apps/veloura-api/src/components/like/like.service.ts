@@ -8,7 +8,7 @@ import { Message } from '../../libs/enums/common.enum';
 import { OrdinaryInquiry } from '../../libs/dto/product/product.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { lookupFavorite } from '../../libs/config';
-import { Products } from '../../libs/dto/product/product';
+import { Product, Products } from '../../libs/dto/product/product';
 import { NotificationService } from '../notification/notification.service'; // import NotificationService
 import { NotificationType, NotificationGroup } from '../../libs/enums/notification.enum';
 import { ProductService } from '../product/product.service';
@@ -17,7 +17,7 @@ import { ProductService } from '../product/product.service';
 export class LikeService {
 	constructor(
 		@InjectModel('Like') private readonly likeModel: Model<Like>,
-		private readonly productService: ProductService,
+		@InjectModel('Product') private readonly productModel: Model<Product>,	
 		private readonly notificationService: NotificationService, // inject NotificationService
 	) {}
 
@@ -71,18 +71,23 @@ export class LikeService {
 	}
 
 	private async getOwnerIdForLike(input: LikeInput): Promise<ObjectId> {
-		// Determine who owns the thing being liked.
 		switch (input.likeGroup) {
-			case LikeGroup.MEMBER:
-				return input.likeRefId; // when you like a member, that member is the owner
-			case LikeGroup.PRODUCT:
-				const product = await this.productService.getProduct(null, input.likeRefId);
-				return product.authorId; // adjust to your schema
-			// Add other groups...
-			default:
-				throw new BadRequestException('Unsupported like group');
+		  case LikeGroup.MEMBER:
+			return input.likeRefId; // when liking a member, they ARE the owner
+	  
+		  case LikeGroup.PRODUCT: {
+			const product = await this.productModel.findById(input.likeRefId).exec();
+			if (!product) {
+			  throw new BadRequestException(`Product not found for id: ${input.likeRefId}`);
+			}
+			return product.authorId;
+		  }
+	  
+		  default:
+			throw new BadRequestException(`Unsupported like group: ${input.likeGroup}`);
 		}
-	}
+	  }
+	  
 
 	// ...existing methods below unchanged...
 	public async checkLikeExistence(input: LikeInput): Promise<MeLiked[]> {
