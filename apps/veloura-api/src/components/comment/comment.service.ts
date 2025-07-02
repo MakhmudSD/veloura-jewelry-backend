@@ -24,20 +24,20 @@ export class CommentService {
 	// createComment
 	public async createComment(memberId: ObjectId, input: CommentInput): Promise<Comment> {
 		input.memberId = memberId;
-	  
+
 		let result: Comment | null = null;
-	  
+
 		try {
-		  result = await this.commentModel.create(input);
+			result = await this.commentModel.create(input);
 		} catch (err) {
-		  console.log('ERROR on service Model of createComment', err.message);
-		  throw new BadRequestException(Message.CREATE_FAILED);
+			console.log('ERROR on service Model of createComment', err.message);
+			throw new BadRequestException(Message.CREATE_FAILED);
 		}
-	  
+
 		// If the comment is a reply, you can do extra logic here:
 		if (input.parentId) {
-		  console.log(`New reply created under parent comment: ${input.parentId}`);
-		  // TODO: Fire a notification here later!
+			console.log(`New reply created under parent comment: ${input.parentId}`);
+			// TODO: Fire a notification here later!
 		}
 		switch (input.commentGroup) {
 			case CommentGroup.PRODUCT:
@@ -70,7 +70,7 @@ export class CommentService {
 		}
 
 		if (!result) throw new InternalServerErrorException(Message.CREATE_FAILED);
-  	return result;
+		return result;
 	}
 
 	// updateComment
@@ -104,12 +104,12 @@ export class CommentService {
 							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
 							{
 								$lookup: {
-								  from: 'comments',
-								  localField: '_id',
-								  foreignField: 'parentId',
-								  as: 'replies',
+									from: 'comments',
+									localField: '_id',
+									foreignField: 'parentId',
+									as: 'replies',
 								},
-							  },
+							},
 						],
 						metaCounter: [{ $count: 'total' }],
 					},
@@ -125,39 +125,36 @@ export class CommentService {
 	public async removeCommentByUser(memberId: ObjectId, commentId: ObjectId): Promise<Comment> {
 		// Mark the parent comment as deleted
 		const result = await this.commentModel.findOneAndUpdate(
-		  {
-			_id: commentId,
-			memberId: memberId,
-			commentStatus: CommentStatus.ACTIVE,
-		  },
-		  { commentStatus: CommentStatus.DELETE },
-		  { new: true },
+			{
+				_id: commentId,
+				memberId: memberId,
+				commentStatus: CommentStatus.ACTIVE,
+			},
+			{ commentStatus: CommentStatus.DELETE },
+			{ new: true },
 		);
-	  
+
 		if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
-	  
+
 		// Cascade soft-delete all replies of this comment
 		await this.commentModel.updateMany(
-		  { parentId: commentId, commentStatus: CommentStatus.ACTIVE },
-		  { commentStatus: CommentStatus.DELETE },
+			{ parentId: commentId, commentStatus: CommentStatus.ACTIVE },
+			{ commentStatus: CommentStatus.DELETE },
 		);
-	  
-		return result;
-	  }
-	
-	  /** ADMIN */
 
-	  // removeCommentByAdmin
+		return result;
+	}
+
+	/** ADMIN */
+
+	// removeCommentByAdmin
 	public async removeCommentByAdmin(commentId: ObjectId): Promise<Comment> {
 		const search: T = {
 			_id: commentId,
 			commentStatus: CommentStatus.DELETE,
 		};
 		const result = await this.commentModel.findOneAndDelete(search).exec();
-		await this.commentModel.updateMany(
-			{ parentId: commentId },
-			{ commentStatus: CommentStatus.DELETE },
-		  );
+		await this.commentModel.updateMany({ parentId: commentId }, { commentStatus: CommentStatus.DELETE });
 		if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
 
 		return result;
