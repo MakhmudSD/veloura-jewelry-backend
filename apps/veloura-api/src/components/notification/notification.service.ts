@@ -1,9 +1,9 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import { CreateNotificationInput } from '../../libs/dto/notification/notification.input';
+import { CreateNotificationInput, NotificationsInquiry } from '../../libs/dto/notification/notification.input';
 import { NotificationStatus } from '../../libs/enums/notification.enum';
-import { Notification } from '../../libs/dto/notification/notification';
+import { Notification, Notifications } from '../../libs/dto/notification/notification';
 
 @Injectable()
 export class NotificationService {
@@ -12,7 +12,35 @@ export class NotificationService {
 		private readonly notificationModel: Model<Notification>,
 	) {}
 
-	async createNotification(input: CreateNotificationInput): Promise<Notification> {
+	public async getNotifications(memberId: ObjectId, input: NotificationsInquiry): Promise<Notifications> {
+		const { page, limit } = input;
+	  
+		const result = await this.notificationModel.aggregate([
+		  { $match: { ownerId: memberId } },
+		  { $sort: { createdAt: -1 } },
+		  {
+			$facet: {
+			  list: [
+				{ $skip: (page - 1) * limit },
+				{ $limit: limit },
+			  ],
+			  metaCounter: [{ $count: 'total' }],
+			},
+		  },
+		]).exec();
+	  
+		const data = result[0] || { list: [], metaCounter: [] };
+	  
+		const total = data.metaCounter.length ? data.metaCounter[0].total : 0;
+	  
+		return {
+		  list: data.list,
+		  total,   // ✅ Always defined!
+		};
+	  }
+	  
+	  
+	public async createNotification(input: CreateNotificationInput): Promise<Notification> {
 		const result = await this.notificationModel.create({
 			...input,
 			notificationStatus: NotificationStatus.WAIT,

@@ -4,17 +4,35 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { ObjectId } from 'mongoose';
-import { Notification } from '../../libs/dto/notification/notification';
-import { CreateNotificationInput } from '../../libs/dto/notification/notification.input';
+import { Notification, Notifications } from '../../libs/dto/notification/notification';
+import { CreateNotificationInput, NotificationsInquiry } from '../../libs/dto/notification/notification.input';
 
 @Resolver()
 export class NotificationResolver {
 	constructor(private readonly notificationService: NotificationService) {}
 
 	@UseGuards(AuthGuard)
-	@Query(() => [Notification])
-	async getNotifications(@AuthMember('_id') receiverId: ObjectId) {
-		return await this.notificationService.getNotificationsForUser(receiverId);
+	@Query(() => Notifications)
+	async getNotifications(
+		@Args('input') input: NotificationsInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Notifications> {
+		return this.notificationService.getNotifications(memberId, input);
+	}
+
+	@UseGuards(AuthGuard)
+	@Mutation(() => Notification)
+	async createNotification(
+		@Args('input') input: CreateNotificationInput,
+		@AuthMember('_id') memberId: ObjectId, // optional if you want ownerId to come from auth
+	): Promise<Notification> {
+		// Optionally inject the ownerId if your input doesn’t include it yet
+		const finalInput = {
+			...input,
+			ownerId: memberId,
+		};
+
+		return await this.notificationService.createNotification(finalInput);
 	}
 
 	@UseGuards(AuthGuard)

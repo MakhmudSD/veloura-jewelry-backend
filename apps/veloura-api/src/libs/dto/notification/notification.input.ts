@@ -28,3 +28,27 @@ export class CreateNotificationInput {
 	@Field(() => String, { nullable: true })
 	articleId?: ObjectId;
 }
+
+
+@InputType()
+export class NotificationSearchInput {
+  @Field(() => NotificationType, { nullable: true })
+  notificationType?: NotificationType;
+
+  @Field(() => String, { nullable: true })
+  ownerId?: string;
+}
+
+@InputType()
+export class NotificationsInquiry {
+  @Field(() => Number)
+  page: number;
+
+  @Field(() => Number)
+  limit: number;
+
+  @Field(() => NotificationSearchInput, { nullable: true })
+  search?: NotificationSearchInput;
+}
+
+
