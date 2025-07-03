@@ -33,7 +33,7 @@ export class ProductService {
 
 	public async findById(id: ObjectId): Promise<Product | null> {
 		return this.productModel.findById(id).exec();
-	  }
+	}
 
 	public async createProduct(input: ProductInput): Promise<Product> {
 		try {
@@ -126,7 +126,7 @@ export class ProductService {
 
 	// getProducts
 	public async getProducts(memberId: ObjectId, input: ProductsInquiry): Promise<Products> {
-		const match: T = { productStatus: ProductStatus.AVAILABLE };
+		const match: T = { productStatus: ProductStatus.AVAILABLE, authorId: { $ne: null } };
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
 		this.shapeMatchQuery(match, input);

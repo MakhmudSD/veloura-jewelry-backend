@@ -2,11 +2,8 @@ import { ObjectId } from 'bson';
 
 export const availableDesignerSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews', 'memberRank'];
 export const availableMemberSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews'];
-export const availableProductOptions = [
-	'productExchangeable',
-	'productRentalAvailable',
-  ];
-  export const availableProductSorts = [
+export const availableProductOptions = ['productExchangeable', 'productRentalAvailable'];
+export const availableProductSorts = [
 	'createdAt',
 	'updatedAt',
 	'productLikes',
@@ -53,6 +50,7 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 					$project: {
 						// from MeLiked
 						_id: 0,
+						authorId: 1,
 						memberId: 1,
 						likeRefId: 1,
 						myFavorite: '$$localMyFavorite',
