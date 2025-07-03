@@ -77,7 +77,7 @@ export class ProductService {
 	public async likeTargetProduct(memberId: ObjectId, likeRefId: ObjectId): Promise<Product> {
 		const target: Product | null = await this.productModel.findOne({
 			_id: likeRefId,
-			propertyStatus: ProductStatus.AVAILABLE,
+			productStatus: ProductStatus.AVAILABLE,
 		});
 		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
