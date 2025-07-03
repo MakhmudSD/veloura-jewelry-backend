@@ -12,17 +12,8 @@ export class NotificationResolver {
 	constructor(private readonly notificationService: NotificationService) {}
 
 	@UseGuards(AuthGuard)
-	@Query(() => Notifications)
-	async getNotifications(
-		@Args('input') input: NotificationsInquiry,
-		@AuthMember('_id') memberId: ObjectId,
-	): Promise<Notifications> {
-		return this.notificationService.getNotifications(memberId, input);
-	}
-
-	@UseGuards(AuthGuard)
 	@Mutation(() => Notification)
-	async createNotification(
+	public async createNotification(
 		@Args('input') input: CreateNotificationInput,
 		@AuthMember('_id') memberId: ObjectId, // optional if you want ownerId to come from auth
 	): Promise<Notification> {
@@ -36,14 +27,23 @@ export class NotificationResolver {
 	}
 
 	@UseGuards(AuthGuard)
+	@Query(() => Notifications)
+	public async getNotifications(
+		@Args('input') input: NotificationsInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Notifications> {
+		return this.notificationService.getNotifications(memberId, input);
+	}
+
+	@UseGuards(AuthGuard)
 	@Mutation(() => Notification)
-	async markNotificationRead(@Args('notificationId') notificationId: string) {
+	public async markNotificationRead(@Args('notificationId') notificationId: string) {
 		return await this.notificationService.markNotificationRead(notificationId);
 	}
 
 	@UseGuards(AuthGuard)
 	@Mutation(() => Boolean)
-	async markAllNotificationsRead(@AuthMember('_id') receiverId: ObjectId) {
+	public async markAllNotificationsRead(@AuthMember('_id') receiverId: ObjectId) {
 		await this.notificationService.markAllNotificationsRead(receiverId);
 		return true;
 	}
