@@ -13,13 +13,20 @@ export class NotificationService {
 	) {}
 
 	public async createNotification(input: CreateNotificationInput): Promise<Notification> {
-		const result = await this.notificationModel.create({
+		try {
+		  console.log('Creating notification:', input);
+		  const result = await this.notificationModel.create({
 			...input,
 			notificationStatus: NotificationStatus.WAIT,
-		});
-		// TODO: emit via websocket here later!
-		return result;
-	}
+		  });
+		  console.log('Notification created:', result);
+		  return result;
+		} catch (error) {
+		  console.error('Notification creation failed:', error);
+		  throw error;
+		}
+	  }
+	  
 
 	public async getNotifications(memberId: ObjectId, input: NotificationsInquiry): Promise<Notifications> {
 		const { page, limit } = input;

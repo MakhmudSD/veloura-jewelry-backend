@@ -1,3 +1,4 @@
+import { Comment } from './../../libs/dto/comment/comment';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
@@ -11,7 +12,6 @@ import { lookupFavorite } from '../../libs/config';
 import { Product, Products } from '../../libs/dto/product/product';
 import { NotificationService } from '../notification/notification.service'; // import NotificationService
 import { NotificationType, NotificationGroup } from '../../libs/enums/notification.enum';
-import { Comment } from '../../libs/dto/comment/comment'; // import your Comment DTO
 import { Member } from '../../libs/dto/member/member';
 import { BoardArticle } from '../../libs/dto/board-article/board-article';
 
@@ -22,6 +22,7 @@ export class LikeService {
 		@InjectModel('Product') private readonly productModel: Model<Product>,
 		@InjectModel('BoardArticle') private readonly articleModel: Model<BoardArticle>,
 		@InjectModel('Member') private readonly memberModel: Model<Member>,
+		@InjectModel('Member') private readonly commentModel: Model<Comment>,
 		private readonly notificationService: NotificationService,
 	) {}
 
@@ -62,14 +63,21 @@ export class LikeService {
 						notificationDesc = `${memberNick} liked your article titled '${articleTitle}'`;
 						break;
 					}
+					case LikeGroup.COMMENT: {
+						const comment = await this.commentModel.findById(input.likeRefId).exec();
+						const commentContent = comment?.commentContent || 'your comment';
+						notificationTitle = `${memberNick} liked your comment`;
+						notificationDesc = `${memberNick} liked your comment titled '${commentContent}'`;
+						break;
+					}
 					case LikeGroup.MEMBER: {
 						notificationTitle = `${memberNick} liked your profile`;
-            notificationDesc = `${memberNick} liked your profile on ${new Date().toLocaleDateString()}`;
+						notificationDesc = `${memberNick} liked your profile on ${new Date().toLocaleDateString()}`;
 						break;
 					}
 					default: {
 						notificationTitle = `${memberNick} liked your content`;
-            notificationDesc = `${memberNick} liked your content on ${new Date().toLocaleDateString()}`;
+						notificationDesc = `${memberNick} liked your content on ${new Date().toLocaleDateString()}`;
 					}
 				}
 

@@ -27,7 +27,11 @@ export class CreateNotificationInput {
 
 	@Field(() => String, { nullable: true })
 	articleId?: ObjectId;
+
+	@Field(() => String, { nullable: true })
+	commentId?: ObjectId;
 }
+
 
 @InputType()
 export class NotificationSearchInput {
