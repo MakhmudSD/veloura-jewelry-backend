@@ -38,6 +38,8 @@ export class ProductService {
 	public async createProduct(input: ProductInput): Promise<Product> {
 		try {
 			const result: any = await this.productModel.create(input);
+			console.log('✅ Product created:', result._id);
+
 			await this.memberService.memberStatsEditor({ _id: result.memberId, targetKey: 'memberProducts', modifier: 1 });
 			return result;
 		} catch (err) {

@@ -32,7 +32,8 @@ export class ProductResolver {
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Product> {
 		console.log('Mutation: createProduct');
-		input.memberId = memberId; // not coming from frontend, exists only in backend
+		input.memberId = memberId;
+		input.authorId = memberId;
 		return await this.productService.createProduct(input);
 	}
 
@@ -47,7 +48,7 @@ export class ProductResolver {
 	@UseGuards(AuthGuard)
 	@Mutation(() => Product)
 	public async likeTargetProduct(
-		@Args('propertyId') input: string,
+		@Args('productId') input: string,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Product> {
 		console.log('Mutation: likeTargetProduct');

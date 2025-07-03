@@ -123,6 +123,12 @@ const ProductSchema = new Schema(
 			ref: 'Member',
 		},
 
+		authorId: {
+			type: Schema.Types.ObjectId,
+			required: true,
+			ref: 'Member',
+		},
+
 		soldAt: {
 			type: Date,
 		},
@@ -135,8 +141,14 @@ const ProductSchema = new Schema(
 );
 
 ProductSchema.index(
-	{ productMainCategory: 1, propertyLocation: 1, productTitle: 1, productPrice: 1 },
+	{ 
+	  productMainCategory: 1, 
+	  productJewelrySubCategory: 1,   // ✅ fixed spelling!
+	  productLocation: 1, 
+	  productTitle: 1, 
+	  productPrice: 1 
+	},
 	{ unique: true },
-);
+  );
 
 export default ProductSchema;

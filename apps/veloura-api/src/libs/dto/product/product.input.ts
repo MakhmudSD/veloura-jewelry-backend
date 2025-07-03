@@ -73,6 +73,8 @@ export class ProductInput {
 
 	memberId?: ObjectId;
 
+	authorId?: ObjectId;
+
 	@IsOptional()
 	@Field(() => Date, { nullable: true })
 	constructedAt?: Date;
