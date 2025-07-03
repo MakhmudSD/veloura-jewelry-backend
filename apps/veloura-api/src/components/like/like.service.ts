@@ -11,125 +11,157 @@ import { lookupFavorite } from '../../libs/config';
 import { Product, Products } from '../../libs/dto/product/product';
 import { NotificationService } from '../notification/notification.service'; // import NotificationService
 import { NotificationType, NotificationGroup } from '../../libs/enums/notification.enum';
-import { ProductService } from '../product/product.service';
+import { Comment } from '../../libs/dto/comment/comment';  // import your Comment DTO
+import { Member } from '../../libs/dto/member/member';
+import { BoardArticle } from '../../libs/dto/board-article/board-article';
 
 @Injectable()
 export class LikeService {
-	constructor(
-		@InjectModel('Like') private readonly likeModel: Model<Like>,
-		@InjectModel('Product') private readonly productModel: Model<Product>,	
-		private readonly notificationService: NotificationService, // inject NotificationService
-	) {}
+  constructor(
+    @InjectModel('Like') private readonly likeModel: Model<Like>,
+    @InjectModel('Product') private readonly productModel: Model<Product>,
+    @InjectModel('BoardArticle') private readonly articleModel: Model<BoardArticle>,
+    @InjectModel('Member') private readonly memberModel: Model<Member>,
+    private readonly notificationService: NotificationService,
+  ) {}
 
-	// toggleLike
-	public async toggleLike(input: LikeInput): Promise<number> {
-		const search: T = { memberId: input.memberId, likeRefId: input.likeRefId },
-			exist = await this.likeModel.findOne(search).exec();
-		let modifier = 1;
+  public async toggleLike(input: LikeInput): Promise<number> {
+    const search: T = { memberId: input.memberId, likeRefId: input.likeRefId },
+      exist = await this.likeModel.findOne(search).exec();
+    let modifier = 1;
 
-		if (exist) {
-			await this.likeModel.findOneAndDelete(search).exec();
-			modifier = -1;
-		} else {
-			try {
-				await this.likeModel.create(input);
+    if (exist) {
+      await this.likeModel.findOneAndDelete(search).exec();
+      modifier = -1;
+    } else {
+      try {
+        await this.likeModel.create(input);
 
-				// ---- NOTIFICATION CREATION START ----
-				// Create notification ONLY when a like is added (modifier = 1)
-				await this.notificationService.createNotification({
-					notificationType: NotificationType.LIKE,
-					notificationGroup: this.mapLikeGroupToNotificationGroup(input.likeGroup),
-					notificationTitle: 'Someone liked your content',
-					notificationDesc: `User ${input.memberId} liked your ${input.likeGroup.toLowerCase()}`,
-					authorId: input.memberId,
-					receiverId: await this.getOwnerIdForLike(input), // function to get content owner ID
-					productId: input.likeGroup === LikeGroup.PRODUCT ? input.likeRefId : undefined,
-					// you can add articleId or commentId here similarly if needed
-				});
-				// ---- NOTIFICATION CREATION END ----
-			} catch (err) {
-				console.log('ERROR on service model of toggleLike', err.message);
-				throw new BadRequestException(Message.CREATE_FAILED);
-			}
-		}
-		console.log(`- Like Modifier ${modifier} -`);
-		return modifier;
-	}
+        // Fetch memberNick for notification
+        const member = await this.memberModel.findById(input.memberId).exec();
+        const memberNick = member?.memberNick || 'Someone';
 
-	// Helper to map LikeGroup to NotificationGroup
-	private mapLikeGroupToNotificationGroup(likeGroup: LikeGroup): NotificationGroup {
-		switch (likeGroup) {
-			case LikeGroup.PRODUCT:
-				return NotificationGroup.PRODUCT;
-			case LikeGroup.ARTICLE:
-				return NotificationGroup.ARTICLE;
-			case LikeGroup.MEMBER:
-				return NotificationGroup.MEMBER;
-			default:
-				return NotificationGroup.MEMBER;
-		}
-	}
+        // Prepare notification title and description variables
+        let notificationTitle = '';
+        let notificationDesc = '';
 
-	private async getOwnerIdForLike(input: LikeInput): Promise<ObjectId> {
-		switch (input.likeGroup) {
-		  case LikeGroup.MEMBER:
-			return input.likeRefId; // when liking a member, they ARE the owner
-	  
-		  case LikeGroup.PRODUCT: {
-			const product = await this.productModel.findById(input.likeRefId).exec();
-			if (!product) {
-			  throw new BadRequestException(`Product not found for id: ${input.likeRefId}`);
-			}
-			return product.authorId;
-		  }
-	  
-		  default:
-			throw new BadRequestException(`Unsupported like group: ${input.likeGroup}`);
-		}
+        switch (input.likeGroup) {
+          case LikeGroup.PRODUCT: {
+            const product = await this.productModel.findById(input.likeRefId).exec();
+            const productName = product?.productTitle || 'your product';
+            notificationTitle = `${memberNick} liked your product`;
+            notificationDesc = `${memberNick} liked your product '${productName}'`;
+            break;
+          }
+          case LikeGroup.ARTICLE: {
+            const article = await this.articleModel.findById(input.likeRefId).exec();
+            const articleTitle = article?.articleTitle || 'your article';
+            notificationTitle = `${memberNick} liked your article`;
+            notificationDesc = `${memberNick} liked your article titled '${articleTitle}'`;
+            break;
+          }
+          case LikeGroup.MEMBER: {
+            notificationTitle = `${memberNick} liked your profile`;
+            notificationDesc = `${memberNick} liked your profile`;
+            break;
+          }
+          default: {
+            notificationTitle = `${memberNick} liked your content`;
+            notificationDesc = `${memberNick} liked your content`;
+          }
+        }
+
+        await this.notificationService.createNotification({
+          notificationType: NotificationType.LIKE,
+          notificationGroup: this.mapLikeGroupToNotificationGroup(input.likeGroup),
+          notificationTitle,
+          notificationDesc,
+          authorId: input.memberId,
+          receiverId: await this.getOwnerIdForLike(input),
+          productId: input.likeGroup === LikeGroup.PRODUCT ? input.likeRefId : undefined,
+          // you can add articleId or commentId similarly if you track those
+        });
+      } catch (err) {
+        console.log('ERROR on toggleLike:', err.message);
+        throw new BadRequestException(Message.CREATE_FAILED);
+      }
+    }
+    console.log(`- Like Modifier ${modifier} -`);
+    return modifier;
+  }
+
+  private mapLikeGroupToNotificationGroup(likeGroup: LikeGroup): NotificationGroup {
+    switch (likeGroup) {
+      case LikeGroup.PRODUCT:
+        return NotificationGroup.PRODUCT;
+      case LikeGroup.ARTICLE:
+        return NotificationGroup.ARTICLE;
+      case LikeGroup.MEMBER:
+        return NotificationGroup.MEMBER;
+      default:
+        return NotificationGroup.MEMBER;
+    }
+  }
+
+  private async getOwnerIdForLike(input: LikeInput): Promise<ObjectId> {
+    switch (input.likeGroup) {
+      case LikeGroup.MEMBER:
+        return input.likeRefId; // member is owner
+      case LikeGroup.PRODUCT: {
+        const product = await this.productModel.findById(input.likeRefId).exec();
+        if (!product) throw new BadRequestException(`Product not found: ${input.likeRefId}`);
+        return product.authorId;
+      }
+      case LikeGroup.ARTICLE: {
+        const article = await this.articleModel.findById(input.likeRefId).exec();
+        if (!article) throw new BadRequestException(`Article not found: ${input.likeRefId}`);
+        return article.authorId;
 	  }
-	  
+      default:
+        throw new BadRequestException(`Unsupported like group: ${input.likeGroup}`);
+    }
+  }
 
-	// ...existing methods below unchanged...
-	public async checkLikeExistence(input: LikeInput): Promise<MeLiked[]> {
-		const { memberId, likeRefId } = input;
-		const result = await this.likeModel.findOne({ memberId: memberId, likeRefId: likeRefId }).exec();
-		return result ? [{ memberId: memberId, likeRefId: likeRefId, myFavorite: true }] : [];
-	}
+  public async checkLikeExistence(input: LikeInput): Promise<MeLiked[]> {
+	const { memberId, likeRefId } = input;
+	const result = await this.likeModel.findOne({ memberId: memberId, likeRefId: likeRefId }).exec();
+	return result ? [{ memberId: memberId, likeRefId: likeRefId, myFavorite: true }] : [];
+}
 
-	public async getFavoriteProducts(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
-		const { page, limit } = input;
-		const match: T = { likeGroup: LikeGroup.PRODUCT, memberId: memberId };
+public async getFavoriteProducts(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
+	const { page, limit } = input;
+	const match: T = { likeGroup: LikeGroup.PRODUCT, memberId: memberId };
 
-		const data: T = await this.likeModel
-			.aggregate([
-				{ $match: match },
-				{ $sort: { updatedAt: -1 } },
-				{
-					$lookup: {
-						from: 'products',
-						localField: 'likeRefId',
-						foreignField: '_id',
-						as: 'favoriteProduct',
-					},
+	const data: T = await this.likeModel
+		.aggregate([
+			{ $match: match },
+			{ $sort: { updatedAt: -1 } },
+			{
+				$lookup: {
+					from: 'products',
+					localField: 'likeRefId',
+					foreignField: '_id',
+					as: 'favoriteProduct',
 				},
-				{ $unwind: '$favoriteProduct' },
-				{
-					$facet: {
-						list: [
-							{ $skip: (page - 1) * limit },
-							{ $limit: limit },
-							lookupFavorite,
-							{ $unwind: '$favoriteProduct.memberData' },
-						],
-						metaCounter: [{ $count: 'total' }],
-					},
+			},
+			{ $unwind: '$favoriteProduct' },
+			{
+				$facet: {
+					list: [
+						{ $skip: (page - 1) * limit },
+						{ $limit: limit },
+						lookupFavorite,
+						{ $unwind: '$favoriteProduct.memberData' },
+					],
+					metaCounter: [{ $count: 'total' }],
 				},
-			])
-			.exec();
+			},
+		])
+		.exec();
 
-		console.log('data:', data);
-		const result: Products = { list: [], metaCounter: data[0].metaCounter };
-		result.list = data[0].list.map((ele) => ele.favoriteProduct);
-		return result;
-	}
+	console.log('data:', data);
+	const result: Products = { list: [], metaCounter: data[0].metaCounter };
+	result.list = data[0].list.map((ele) => ele.favoriteProduct);
+	return result;
+}
 }
