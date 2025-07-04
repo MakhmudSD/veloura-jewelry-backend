@@ -74,7 +74,6 @@ export class ProductResolver {
 		@Args('input') input: ProductsInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Products> {
-		console.log('AuthMember:', memberId); // <-- SHOW THIS
 		console.log('Query: getProducts');
 		return await this.productService.getProducts(memberId, input);
 	}

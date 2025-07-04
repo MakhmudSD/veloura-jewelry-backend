@@ -13,8 +13,17 @@ import { StatisticModifier, T } from '../../libs/types/common';
 import { BoardArticleStatus } from '../../libs/enums/board-article.enum';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { BoardArticleUpdate } from '../../libs/dto/board-article/board-article.update';
-import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import {
+	lookupAuthMemberFollowed,
+	lookupAuthMemberLiked,
+	lookupMember,
+	shapeIntoMongoObjectId,
+} from '../../libs/config';
 import { ViewService } from '../view/views.service';
+import { ProductStatus } from '../../libs/enums/product.enum';
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { LikeService } from '../like/like.service';
 
 @Injectable()
 export class BoardArticleService {
@@ -22,12 +31,13 @@ export class BoardArticleService {
 		@InjectModel('BoardArticle') private readonly boardArticleModel: Model<BoardArticle | null>,
 		private memberService: MemberService,
 		private viewService: ViewService,
+		private likeService: LikeService,
 	) {}
 
 	public async findById(id: ObjectId): Promise<BoardArticle | null> {
 		return this.boardArticleModel.findById(id).exec();
-	  }
-	  
+	}
+
 	public async createBoardArticle(input: BoardArticleInput): Promise<BoardArticle> {
 		try {
 			const result: any = await this.boardArticleModel.create(input);
@@ -57,7 +67,10 @@ export class BoardArticleService {
 			}
 		}
 
-		targetBoardArticle.memberData = await this.memberService.getMember(null, targetBoardArticle.memberId);
+		const likeInput = { memberId: memberId, likeRefId: articleId, likeGroup: LikeGroup.ARTICLE };
+		targetBoardArticle.meLiked = await this.likeService.checkLikeExistence(likeInput as LikeInput);
+		(lookupAuthMemberFollowed({ followerId: memberId, followingId: '$followingId' }),
+			(targetBoardArticle.memberData = await this.memberService.getMember(null, targetBoardArticle.memberId)));
 		return targetBoardArticle;
 	}
 
@@ -87,6 +100,39 @@ export class BoardArticleService {
 		return result;
 	}
 
+	// likeTargetBoardArticle
+	public async likeTargetBoardArticle(memberId: ObjectId, likeRefId: ObjectId): Promise<BoardArticle> {
+		const target = await this.boardArticleModel.findOne({
+		  _id: likeRefId,
+		  articleStatus: BoardArticleStatus.ACTIVE,
+		});
+		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+	  
+		const input: LikeInput = {
+		  memberId: memberId,
+		  likeRefId: likeRefId,
+		  likeGroup: LikeGroup.ARTICLE,
+		};
+	  
+		const modifier = await this.likeService.toggleLike(input);
+	  
+		const result = await this.boardArticleStatsEditor({
+		  _id: likeRefId,
+		  targetKey: 'articleLikes',
+		  modifier: modifier,
+		});
+	  
+		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+	  
+		// ✅ Safe fallback
+		if (!result.authorId && target.authorId) {
+		  result.authorId = target.authorId;
+		}
+	  
+		return result;
+	  }
+	  
+
 	public async getBoardArticles(memberId: ObjectId, input: BoardArticlesInquiry): Promise<BoardArticles> {
 		const { articleCategory, text } = input.search;
 
@@ -108,7 +154,7 @@ export class BoardArticleService {
 						list: [
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
-							// meLiked
+							lookupAuthMemberLiked(memberId),
 							lookupMember,
 							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
 						],
@@ -140,7 +186,7 @@ export class BoardArticleService {
 						list: [
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
-							// meLiked
+							lookupAuthMemberLiked(memberId),
 							lookupMember,
 							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
 						],

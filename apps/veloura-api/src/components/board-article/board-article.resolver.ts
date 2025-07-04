@@ -29,7 +29,8 @@ export class BoardArticleResolver {
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<BoardArticle> {
 		console.log('Mutation: createBoardArticle');
-		input.memberId = memberId; // not coming from frontend, exists only in backend
+		input.memberId = memberId;
+		input.authorId = memberId;
 		return await this.boardArticleService.createBoardArticle(input);
 	}
 
@@ -66,6 +67,18 @@ export class BoardArticleResolver {
 		console.log('Query: getBoardArticles', input);
 		return await this.boardArticleService.getBoardArticles(memberId, input);
 	}
+
+		@UseGuards(AuthGuard)
+		@Mutation(() => BoardArticle)
+		public async likeTargetBoardArticle(
+			@Args('articleId') input: string,
+			@AuthMember('_id') memberId: ObjectId,
+		): Promise<BoardArticle> {
+			console.log('Mutation: likeTargetBoardArticle');
+			const likeRefId = shapeIntoMongoObjectId(input);
+			return await this.boardArticleService.likeTargetBoardArticle(memberId, likeRefId);
+		}
+	
 
 	/** ADMIN **/
 	@Roles(MemberType.ADMIN)
