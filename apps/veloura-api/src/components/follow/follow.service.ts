@@ -47,12 +47,15 @@ export class FollowService {
 		await this.memberService.memberStatsEditor({ _id: followingId, targetKey: 'memberFollowings', modifier: 1 });
 		await this.memberService.memberStatsEditor({ _id: followerId, targetKey: 'memberFollowers', modifier: 1 });
 
+		// Get the follower (author) details
+			const followerMember = await this.memberService.getMember(null, followerId);
+			const memberNick = followerMember?.memberNick ?? 'Someone'; // fallback
 		// Create notification only once
 		const notification = await this.notificationService.createNotification({
 			notificationType: NotificationType.FOLLOW,
 			notificationGroup: NotificationGroup.MEMBER,
 			notificationTitle: 'New Follower!',
-			notificationDesc: `Someone started following you.`,
+			notificationDesc: `${memberNick} started following you.`,
 			authorId: followerId,
 			receiverId: followingId,
 		});
