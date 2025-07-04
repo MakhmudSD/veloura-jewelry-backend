@@ -1,7 +1,7 @@
 import { Mutation, Resolver, Query, Args } from '@nestjs/graphql';
 import { MemberService } from './member.service';
 import { BadRequestException, UseGuards } from '@nestjs/common';
-import { DesignerInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
+import { StoreInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -40,7 +40,7 @@ export class MemberResolver {
 		return `Hi ${memberNick}`;
 	}
 
-	@Roles(MemberType.DESIGNER, MemberType.USER)
+	@Roles(MemberType.STORE, MemberType.USER)
 	@UseGuards(RolesGuard)
 	@Query(() => String)
 	public async checkAuthRoles(@AuthMember() authMember: Member): Promise<String> {
@@ -71,12 +71,12 @@ export class MemberResolver {
 
 	@UseGuards(WithoutGuard)
 	@Query(() => Members)
-	public async getDesigners(
-		@Args('input') input: DesignerInquiry,
+	public async getStores(
+		@Args('input') input: StoreInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Members> {
-		console.log('Query: getDesigners');
-		return await this.memberService.getDesigners(memberId, input);
+		console.log('Query: getStores');
+		return await this.memberService.getStores(memberId, input);
 	}
 
 	@UseGuards(AuthGuard)

@@ -44,7 +44,7 @@ export class BoardArticleResolver {
 		return await this.boardArticleService.getBoardArticle(memberId, articleId);
 	}
 
-	@Roles(MemberType.DESIGNER)
+	@Roles(MemberType.STORE)
 	@UseGuards(RolesGuard)
 	@Mutation((returns) => BoardArticle)
 	public async updateBoardArticle(
@@ -56,7 +56,7 @@ export class BoardArticleResolver {
 		return await this.boardArticleService.updateBoardArticle(memberId, input);
 	}
 
-	@Roles(MemberType.DESIGNER)
+	@Roles(MemberType.STORE)
 	@UseGuards(RolesGuard)
 	@Query((returns) => BoardArticles)
 	public async getBoardArticles(

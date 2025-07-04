@@ -14,7 +14,7 @@ import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../
 import {
 	ProductInput,
 	ProductsInquiry,
-	DesignerProductsInquiry,
+	StoreProductsInquiry,
 	AllProductsInquiry,
 	OrdinaryInquiry,
 } from '../../libs/dto/product/product.input';
@@ -166,8 +166,8 @@ export class ProductService {
 		return (await this, this.viewService.getVisitedProducts(memberId, input));
 	}
 
-	// getDesignerProducts
-	public async getDesignerProducts(memberId: ObjectId, input: DesignerProductsInquiry): Promise<Products> {
+	// getStoreProducts
+	public async getStoreProducts(memberId: ObjectId, input: StoreProductsInquiry): Promise<Products> {
 		const { productStatus } = input.search;
 		if (productStatus === ProductStatus.DELETE) throw new InternalServerErrorException(Message.NOT_ALLOWED_REQUEST);
 

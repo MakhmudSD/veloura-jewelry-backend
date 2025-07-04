@@ -164,7 +164,7 @@ class APISearch {
 }
 
 @InputType()
-export class DesignerProductsInquiry {
+export class StoreProductsInquiry {
 	@IsNotEmpty()
 	@Min(1)
 	@Field(() => Int)

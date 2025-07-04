@@ -4,7 +4,7 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { Member, Members } from '../../libs/dto/member/member';
-import { DesignerInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
+import { StoreInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
 import { StatisticModifier, T } from '../../libs/types/common';
@@ -109,9 +109,10 @@ export class MemberService {
 		return result ? [{ followerId: followerId, followingId: followingId, myFollowing: true }] : [];
 	}
 
-	public async getDesigners(memberId: ObjectId, input: DesignerInquiry): Promise<Members> {
+	// getStores
+	public async getStores(memberId: ObjectId, input: StoreInquiry): Promise<Members> {
 		const { text } = input.search;
-		const match: T = { memberType: MemberType.DESIGNER, memberStatus: MemberStatus.ACTIVE };
+		const match: T = { memberType: MemberType.STORE, memberStatus: MemberStatus.ACTIVE };
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
 		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };

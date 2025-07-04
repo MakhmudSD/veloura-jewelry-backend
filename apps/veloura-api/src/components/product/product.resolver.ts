@@ -11,7 +11,7 @@ import { ObjectId } from 'mongoose';
 import { WithoutGuard } from '../auth/guards/without.guard';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 import {
-	DesignerProductsInquiry,
+	StoreProductsInquiry,
 	AllProductsInquiry,
 	ProductsInquiry,
 	ProductInput,
@@ -24,7 +24,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 export class ProductResolver {
 	constructor(private readonly productService: ProductService) {}
 
-	@Roles(MemberType.DESIGNER)
+	@Roles(MemberType.STORE)
 	@UseGuards(RolesGuard)
 	@Mutation(() => Product)
 	public async createProduct(
@@ -56,7 +56,7 @@ export class ProductResolver {
 		return await this.productService.likeTargetProduct(memberId, likeRefId);
 	}
 
-	@Roles(MemberType.DESIGNER)
+	@Roles(MemberType.STORE)
 	@UseGuards(RolesGuard)
 	@Mutation((returns) => Product)
 	public async updateProduct(
@@ -98,15 +98,15 @@ export class ProductResolver {
 		return await this.productService.getVisited(memberId, input);
 	}
 
-	@Roles(MemberType.DESIGNER)
+	@Roles(MemberType.STORE)
 	@UseGuards(RolesGuard)
 	@Query((returns) => Products)
-	public async getDesignerProducts(
-		@Args('input') input: DesignerProductsInquiry,
+	public async getStoreProducts(
+		@Args('input') input: StoreProductsInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Products> {
-		console.log('Query: getDesignerProducts', input);
-		return await this.productService.getDesignerProducts(memberId, input);
+		console.log('Query: getStoreProducts', input);
+		return await this.productService.getStoreProducts(memberId, input);
 	}
 
 	/** ADMIN **/
