@@ -34,14 +34,13 @@ export class Comment {
 	@Field(() => Member, { nullable: true })
 	memberData?: Member;
 
-	  /** NEW: parentId **/
-	  @Field(() => String, { nullable: true })
-	  parentId?: ObjectId;
-	
-	  /** NEW: nested replies **/
-	  @Field(() => [Comment], { nullable: true })
-	  replies?: Comment[];
-	
+	/** NEW: parentId **/
+	@Field(() => String, { nullable: true })
+	parentId?: ObjectId;
+
+	/** NEW: nested replies **/
+	@Field(() => [Comment], { nullable: true })
+	replies?: Comment[];
 }
 
 @ObjectType()

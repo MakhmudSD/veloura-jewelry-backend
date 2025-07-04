@@ -28,6 +28,7 @@ export class BoardArticleInput {
 	memberId?: ObjectId;
 
 	authorId?: ObjectId;
+
 }
 
 @InputType()

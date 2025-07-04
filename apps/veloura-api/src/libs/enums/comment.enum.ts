@@ -18,12 +18,8 @@ registerEnumType(CommentGroup, {
   name: 'CommentGroup',
 });
 
-// ✅ This is fine: just a plain JS map
 export const commentToNotificationGroupMap: Record<CommentGroup, NotificationGroup> = {
   [CommentGroup.PRODUCT]: NotificationGroup.PRODUCT,
   [CommentGroup.ARTICLE]: NotificationGroup.ARTICLE,
   [CommentGroup.MEMBER]: NotificationGroup.MEMBER,
 };
-
-// ❌ Do NOT register the map — not needed
-// registerEnumType(commentToNotificationGroupMap, { ... })  // REMOVE THIS

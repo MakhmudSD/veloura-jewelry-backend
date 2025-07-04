@@ -15,9 +15,8 @@ export class NotificationResolver {
 	@Mutation(() => Notification)
 	public async createNotification(
 		@Args('input') input: CreateNotificationInput,
-		@AuthMember('_id') memberId: ObjectId, // optional if you want ownerId to come from auth
+		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Notification> {
-		// Optionally inject the ownerId if your input doesn’t include it yet
 		const finalInput = {
 			...input,
 			ownerId: memberId,

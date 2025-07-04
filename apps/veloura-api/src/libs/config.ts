@@ -24,6 +24,7 @@ export const getSerialForImage = (filename: string) => {
 	const ext = path.parse(filename).ext;
 	return uuidv4() + ext;
 };
+
 // SHAPING
 export const shapeIntoMongoObjectId = (target: any) => {
 	return typeof target === 'string' ? new ObjectId(target) : target;
@@ -39,7 +40,7 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 				localMemberId: memberId,
 				localMyFavorite: true,
 			},
-			
+
 			pipeline: [
 				{
 					$match: {
@@ -50,7 +51,6 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 				},
 				{
 					$project: {
-						// from MeLiked
 						_id: 0,
 						memberId: 1,
 						likeRefId: 1,
@@ -62,7 +62,6 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 		},
 	};
 };
-
 
 interface LookupAuthMemberFollowed {
 	followerId: T;
@@ -90,7 +89,6 @@ export const lookupAuthMemberFollowed = (input: LookupAuthMemberFollowed) => {
 				},
 				{
 					$project: {
-						// from MeLiked
 						_id: 0,
 						followerId: 1,
 						followingId: 1,

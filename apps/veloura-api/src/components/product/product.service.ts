@@ -277,15 +277,7 @@ export class ProductService {
 		const search = input.search;
 		if (!search) return;
 
-		const {
-			memberId,
-			locationList,
-			categoryList, // productMainCategory
-			pricesRange,
-			dateRange,
-			options,
-			text,
-		} = input.search;
+		const { memberId, locationList, categoryList, pricesRange, dateRange, options, text } = input.search;
 
 		if (memberId) {
 			match.memberId = shapeIntoMongoObjectId(memberId);

@@ -34,23 +34,18 @@ export class FollowService {
 		const targetMember = await this.memberService.getMember(null, followingId);
 		if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
-		// Check if already following
 		const exists = await this.followModel.exists({ followerId, followingId });
 		if (exists) {
 			throw new InternalServerErrorException('Already following this member');
 		}
-
-		// Create follow record
 		const result = await this.registerSubscription(followerId, followingId);
 
-		// Update stats
 		await this.memberService.memberStatsEditor({ _id: followingId, targetKey: 'memberFollowings', modifier: 1 });
 		await this.memberService.memberStatsEditor({ _id: followerId, targetKey: 'memberFollowers', modifier: 1 });
 
-		// Get the follower (author) details
-			const followerMember = await this.memberService.getMember(null, followerId);
-			const memberNick = followerMember?.memberNick ?? 'Someone'; // fallback
-		// Create notification only once
+		const followerMember = await this.memberService.getMember(null, followerId);
+		const memberNick = followerMember?.memberNick ?? 'Someone';
+
 		const notification = await this.notificationService.createNotification({
 			notificationType: NotificationType.FOLLOW,
 			notificationGroup: NotificationGroup.MEMBER,

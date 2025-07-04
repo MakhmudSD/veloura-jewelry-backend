@@ -12,39 +12,38 @@ export class NotificationService {
 		private readonly notificationModel: Model<Notification>,
 	) {}
 
+	// createNotification
 	public async createNotification(input: CreateNotificationInput): Promise<Notification> {
 		try {
-		  console.log('Creating notification:', input);
-		  const result = await this.notificationModel.create({
-			...input,
-			notificationStatus: NotificationStatus.WAIT,
-		  });
-		  console.log('Notification created:', result);
-		  return result;
+			console.log('Creating notification:', input);
+			const result = await this.notificationModel.create({
+				...input,
+				notificationStatus: NotificationStatus.WAIT,
+			});
+			console.log('Notification created:', result);
+			return result;
 		} catch (error) {
-		  console.error('Notification creation failed:', error);
-		  throw error;
+			console.error('Notification creation failed:', error);
+			throw error;
 		}
-	  }
-	  
+	}
 
+	// getNotifications
 	public async getNotifications(memberId: ObjectId, input: NotificationsInquiry): Promise<Notifications> {
 		const { page, limit } = input;
 
 		const result = await this.notificationModel
-		.aggregate([
-		  { $match: { receiverId: memberId } }, // ✅ No wrapping needed
-		  { $sort: { createdAt: -1 } },
-		  {
-			$facet: {
-			  list: [{ $skip: (page - 1) * limit }, { $limit: limit }],
-			  metaCounter: [{ $count: 'total' }],
-			},
-		  },
-		])
-		.exec();
-	  
-	  
+			.aggregate([
+				{ $match: { receiverId: memberId } },
+				{ $sort: { createdAt: -1 } },
+				{
+					$facet: {
+						list: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
 
 		const data = result[0] || { list: [], metaCounter: [] };
 
@@ -52,10 +51,11 @@ export class NotificationService {
 
 		return {
 			list: data.list,
-			total, // ✅ Always defined!
+			total,
 		};
 	}
 
+	// markNotificationRead
 	public async markNotificationRead(notificationId: string): Promise<Notification> {
 		const result = await this.notificationModel.findByIdAndUpdate(
 			notificationId,
@@ -65,6 +65,7 @@ export class NotificationService {
 		return result as unknown as Notification;
 	}
 
+	// markAllNotificationsRead
 	public async markAllNotificationsRead(receiverId: string | ObjectId): Promise<void> {
 		await this.notificationModel.updateMany(
 			{ receiverId, notificationStatus: NotificationStatus.WAIT },

@@ -143,7 +143,7 @@ const ProductSchema = new Schema(
 ProductSchema.index(
 	{ 
 	  productMainCategory: 1, 
-	  productJewelrySubCategory: 1,   // ✅ fixed spelling!
+	  productJewelrySubCategory: 1,
 	  productLocation: 1, 
 	  productTitle: 1, 
 	  productPrice: 1 

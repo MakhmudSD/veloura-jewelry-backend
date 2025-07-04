@@ -33,7 +33,7 @@ export class BoardArticle {
 	@Field(() => Int)
 	articleComments: number;
 
-	@Field(() => String)
+	@Field(() => String, { nullable: true})
 	authorId: ObjectId;
 
 	@Field(() => String)

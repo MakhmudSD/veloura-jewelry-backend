@@ -58,7 +58,6 @@ export class ViewService {
 				{ $unwind: '$visitedProduct' },
 				{
 					$facet: {
-						// integrate properties information to the list
 						list: [
 							{ $skip: (page - 1) * limit },
 							{ $limit: limit },

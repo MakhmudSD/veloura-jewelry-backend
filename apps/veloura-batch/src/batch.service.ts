@@ -15,6 +15,7 @@ export class BatchService {
 		return 'Welcome to Veloura-jewelry BATCH Server!';
 	}
 
+	// batchRollback
 	public async batchRollback(): Promise<void> {
 		await this.productModel
 			.updateMany(
@@ -36,6 +37,7 @@ export class BatchService {
 			.exec();
 	}
 
+	// batchTopProducts
 	public async batchTopProducts(): Promise<void> {
 		const products: Product[] = await this.productModel
 			.find({
@@ -52,6 +54,7 @@ export class BatchService {
 		await Promise.all(promisedList);
 	}
 
+	// batchTopDesigners
 	public async batchTopDesigners(): Promise<void> {
 		const designers: Member[] = await this.memberModel
 			.find({

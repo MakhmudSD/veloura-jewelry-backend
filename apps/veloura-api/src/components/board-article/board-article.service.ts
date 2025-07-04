@@ -34,10 +34,12 @@ export class BoardArticleService {
 		private likeService: LikeService,
 	) {}
 
+	// findById
 	public async findById(id: ObjectId): Promise<BoardArticle | null> {
 		return this.boardArticleModel.findById(id).exec();
 	}
 
+	// createBoardArticle
 	public async createBoardArticle(input: BoardArticleInput): Promise<BoardArticle> {
 		try {
 			const result: any = await this.boardArticleModel.create(input);
@@ -49,6 +51,7 @@ export class BoardArticleService {
 		}
 	}
 
+	// getBoardArticle
 	public async getBoardArticle(memberId: ObjectId, articleId: ObjectId): Promise<BoardArticle> {
 		const search: T = {
 			_id: articleId,
@@ -74,6 +77,7 @@ export class BoardArticleService {
 		return targetBoardArticle;
 	}
 
+	// updateBoardArticle
 	public async updateBoardArticle(memberId: ObjectId, input: BoardArticleUpdate): Promise<BoardArticle> {
 		const { _id, articleStatus } = input;
 
@@ -103,36 +107,31 @@ export class BoardArticleService {
 	// likeTargetBoardArticle
 	public async likeTargetBoardArticle(memberId: ObjectId, likeRefId: ObjectId): Promise<BoardArticle> {
 		const target = await this.boardArticleModel.findOne({
-		  _id: likeRefId,
-		  articleStatus: BoardArticleStatus.ACTIVE,
+			_id: likeRefId,
+			articleStatus: BoardArticleStatus.ACTIVE,
 		});
 		if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-	  
-		const input: LikeInput = {
-		  memberId: memberId,
-		  likeRefId: likeRefId,
-		  likeGroup: LikeGroup.ARTICLE,
-		};
-	  
-		const modifier = await this.likeService.toggleLike(input);
-	  
-		const result = await this.boardArticleStatsEditor({
-		  _id: likeRefId,
-		  targetKey: 'articleLikes',
-		  modifier: modifier,
-		});
-	  
-		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
-	  
-		// ✅ Safe fallback
-		if (!result.authorId && target.authorId) {
-		  result.authorId = target.authorId;
-		}
-	  
-		return result;
-	  }
-	  
 
+		const input: LikeInput = {
+			memberId: memberId,
+			likeRefId: likeRefId,
+			likeGroup: LikeGroup.ARTICLE,
+		};
+
+		const modifier = await this.likeService.toggleLike(input);
+
+		const result = await this.boardArticleStatsEditor({
+			_id: likeRefId,
+			targetKey: 'articleLikes',
+			modifier: modifier,
+		});
+
+		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+
+		return result;
+	}
+
+	// getBoardArticles
 	public async getBoardArticles(memberId: ObjectId, input: BoardArticlesInquiry): Promise<BoardArticles> {
 		const { articleCategory, text } = input.search;
 
@@ -169,6 +168,7 @@ export class BoardArticleService {
 		return result[0];
 	}
 
+	// getAllBoardArticlesByAdmin
 	public async getAllBoardArticlesByAdmin(memberId: ObjectId, input: AllBoardArticlesInquiry): Promise<BoardArticles> {
 		const { articleStatus, articleCategory } = input.search;
 		const match: T = {};
@@ -201,6 +201,7 @@ export class BoardArticleService {
 		return result[0];
 	}
 
+	// updateBoardArticleByAdmin
 	public async updateBoardArticleByAdmin(input: BoardArticleUpdate): Promise<BoardArticle> {
 		const { _id, articleStatus } = input;
 
@@ -220,6 +221,7 @@ export class BoardArticleService {
 		return result;
 	}
 
+	// removeBoardArticleByAdmin
 	public async removeBoardArticleByAdmin(articleId: ObjectId): Promise<BoardArticle> {
 		const search: T = {
 			_id: articleId,
@@ -233,6 +235,7 @@ export class BoardArticleService {
 
 	/** PRIVATES **/
 
+	// boardArticleStatsEditor
 	public async boardArticleStatsEditor(input: StatisticModifier): Promise<BoardArticle | null> {
 		const { _id, targetKey, modifier } = input;
 		const updated = await this.boardArticleModel

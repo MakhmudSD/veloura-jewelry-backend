@@ -27,6 +27,7 @@ export class MemberService {
 		private likeService: LikeService,
 	) {}
 
+	// signup
 	public async signup(input: MemberInput): Promise<Member> {
 		input.memberPassword = await this.authService.hashPassword(input.memberPassword);
 		try {
@@ -39,6 +40,7 @@ export class MemberService {
 		}
 	}
 
+	// login
 	public async login(input: LoginInput): Promise<Member> {
 		const { memberNick, memberPassword } = input;
 		const response = await this.memberModel.findOne({ memberNick }).select('+memberPassword').exec();
@@ -65,6 +67,7 @@ export class MemberService {
 		return response;
 	}
 
+	// updateMember
 	public async updateMember(memberId: ObjectId, input: MemberUpdate): Promise<Member> {
 		const result: Member | null = await this.memberModel
 			.findOneAndUpdate({ _id: memberId, memberStatus: MemberStatus.ACTIVE }, input, { new: true })
@@ -150,6 +153,7 @@ export class MemberService {
 
 	/** ADMIN **/
 
+	// getAllMembersByAdmin
 	public async getAllMembersByAdmin(input: MembersInquiry): Promise<Members> {
 		const { memberStatus, memberType, text } = input.search;
 		const match: T = {};
@@ -176,6 +180,7 @@ export class MemberService {
 		return result[0];
 	}
 
+	// updateMemberByAdmin
 	public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
 		const result: Member | null = await this.memberModel
 			.findOneAndUpdate({ _id: input._id }, input, { new: true })
@@ -184,6 +189,7 @@ export class MemberService {
 		return result;
 	}
 
+	// memberStatsEditor
 	public async memberStatsEditor(input: StatisticModifier): Promise<Member | null> {
 		console.log('executed');
 		const { _id, targetKey, modifier } = input;

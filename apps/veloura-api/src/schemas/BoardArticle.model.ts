@@ -52,9 +52,9 @@ const BoardArticleSchema = new Schema(
 
 		authorId: {
 			type: Schema.Types.ObjectId,
-			required: true,
 			ref: 'Member',
 		},
+
 	},
 	{ timestamps: true, collection: 'boardArticles' },
 );

@@ -61,8 +61,6 @@ export class Following {
 	@Field(() => Date)
 	updatedAt: Date;
 
-	/** from aggregation **/
-
 	@Field(() => [MeLiked], { nullable: true })
 	meLiked?: MeLiked[];
 

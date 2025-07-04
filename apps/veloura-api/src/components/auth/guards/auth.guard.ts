@@ -11,13 +11,12 @@ export class AuthGuard implements CanActivate {
 
 		if (context.contextType === 'graphql') {
 			const request = context.getArgByIndex(2).req;
-			//context.getArgByIndex(2) => the GraphQL context (includes request, response, etc.)
 
 			const bearerToken = request.headers.authorization;
 			if (!bearerToken) throw new BadRequestException(Message.TOKEN_NOT_EXIST);
 
 			console.log('bearerToken:', bearerToken);
-			const token = bearerToken.split(' ')[1], // Index 1 is token
+			const token = bearerToken.split(' ')[1],
 				authMember = await this.authService.verifyToken(token);
 			if (!authMember) throw new UnauthorizedException(Message.NOT_AUTHENTICATED);
 
@@ -26,8 +25,6 @@ export class AuthGuard implements CanActivate {
 
 			return true;
 		}
-
-		// description => http, rpc, gprs and etc are ignored
 		return true;
 	}
 }

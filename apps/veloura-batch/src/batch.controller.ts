@@ -46,11 +46,6 @@ export class BatchController {
 		}
 	}
 
-	// @Interval(1000)
-	// handleInterval() {
-	//  this.logger.debug('Interval Test');
-	// }
-
 	@Get()
 	getHello(): string {
 		return this.batchService.getHello();

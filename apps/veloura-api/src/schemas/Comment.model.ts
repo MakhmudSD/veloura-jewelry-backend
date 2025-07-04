@@ -30,7 +30,6 @@ const CommentSchema = new Schema(
 		required: true,
 	  },
   
-	  /** NEW: Parent comment for nesting **/
 	  parentId: {
 		type: Schema.Types.ObjectId,
 		ref: 'Comment',

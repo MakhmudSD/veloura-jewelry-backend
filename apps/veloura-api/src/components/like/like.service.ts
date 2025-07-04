@@ -26,25 +26,22 @@ export class LikeService {
 		private readonly notificationService: NotificationService,
 	) {}
 
+	// toggleLike
 	public async toggleLike(input: LikeInput): Promise<number> {
 		const search: T = { memberId: input.memberId, likeRefId: input.likeRefId };
 		const exist = await this.likeModel.findOne(search).exec();
 		let modifier = 1;
 
 		if (exist) {
-			// Unlike: delete existing like
 			await this.likeModel.findOneAndDelete(search).exec();
 			modifier = -1;
 		} else {
 			try {
-				// Create the like first
 				await this.likeModel.create(input);
 
-				// Fetch memberNick for notification message
 				const member = await this.memberModel.findById(input.memberId).exec();
 				const memberNick = member?.memberNick || 'Someone';
 
-				// Determine notification title and description based on likeGroup
 				let notificationTitle = '';
 				let notificationDesc = '';
 
@@ -81,12 +78,10 @@ export class LikeService {
 					}
 				}
 
-				// Get the notification receiver (owner of the liked entity)
 				const receiverId = await this.getOwnerIdForLike(input);
 				if (!receiverId) {
 					console.warn('No receiverId found for like notification, skipping notification creation');
 				} else if (receiverId.toString() === input.memberId.toString()) {
-					// Optional: prevent notifying user about liking their own content
 					console.log('User liked their own content, skipping notification');
 				} else {
 					console.log('Creating notification for receiverId:', receiverId.toString());
@@ -99,7 +94,8 @@ export class LikeService {
 						authorId: input.memberId,
 						receiverId,
 						productId: input.likeGroup === LikeGroup.PRODUCT ? input.likeRefId : undefined,
-						// Add articleId, commentId if applicable
+						articleId: input.likeGroup === LikeGroup.ARTICLE ? input.likeRefId : undefined,
+						commentId: input.likeGroup === LikeGroup.COMMENT ? input.likeRefId : undefined,
 					});
 				}
 			} catch (err) {
@@ -111,6 +107,7 @@ export class LikeService {
 		return modifier;
 	}
 
+	// mapLikeGroupToNotificationGroup
 	private mapLikeGroupToNotificationGroup(likeGroup: LikeGroup): NotificationGroup {
 		switch (likeGroup) {
 			case LikeGroup.PRODUCT:
@@ -124,6 +121,7 @@ export class LikeService {
 		}
 	}
 
+	// getOwnerIdForLike
 	private async getOwnerIdForLike(input: LikeInput): Promise<ObjectId> {
 		switch (input.likeGroup) {
 			case LikeGroup.MEMBER:
@@ -143,12 +141,14 @@ export class LikeService {
 		}
 	}
 
+	// checkLikeExistence
 	public async checkLikeExistence(input: LikeInput): Promise<MeLiked[]> {
 		const { memberId, likeRefId } = input;
 		const result = await this.likeModel.findOne({ memberId: memberId, likeRefId: likeRefId }).exec();
 		return result ? [{ memberId: memberId, likeRefId: likeRefId, myFavorite: true }] : [];
 	}
 
+	// getFavoriteProducts
 	public async getFavoriteProducts(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
 		const { page, limit } = input;
 		const match: T = { likeGroup: LikeGroup.PRODUCT, memberId: memberId };
