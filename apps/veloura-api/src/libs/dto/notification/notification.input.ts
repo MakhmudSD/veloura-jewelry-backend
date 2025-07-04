@@ -30,6 +30,9 @@ export class CreateNotificationInput {
 
 	@Field(() => String, { nullable: true })
 	commentId?: ObjectId;
+
+	@Field(() => String, { nullable: true })
+	refId?: ObjectId;
 }
 
 

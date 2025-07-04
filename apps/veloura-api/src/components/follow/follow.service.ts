@@ -30,24 +30,33 @@ export class FollowService {
 		if (followerId.toString() === followingId.toString()) {
 			throw new InternalServerErrorException(Message.SELF_SUBSCRIPTION_DENIED);
 		}
+
 		const targetMember = await this.memberService.getMember(null, followingId);
 		if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
+		// Check if already following
+		const exists = await this.followModel.exists({ followerId, followingId });
+		if (exists) {
+			throw new InternalServerErrorException('Already following this member');
+		}
+
+		// Create follow record
 		const result = await this.registerSubscription(followerId, followingId);
 
+		// Update stats
 		await this.memberService.memberStatsEditor({ _id: followingId, targetKey: 'memberFollowings', modifier: 1 });
 		await this.memberService.memberStatsEditor({ _id: followerId, targetKey: 'memberFollowers', modifier: 1 });
 
+		// Create notification only once
 		const notification = await this.notificationService.createNotification({
-			notificationType: NotificationType.LIKE, // or NotificationType.FOLLOW
+			notificationType: NotificationType.FOLLOW,
 			notificationGroup: NotificationGroup.MEMBER,
 			notificationTitle: 'New Follower!',
-			notificationDesc: `You have a new follower.`,
+			notificationDesc: `Someone started following you.`,
 			authorId: followerId,
 			receiverId: followingId,
 		});
 
-		// ✅ Emit via WebSocket
 		this.notificationGateway.sendNotification(followingId.toString(), notification);
 
 		return result;
