@@ -1,3 +1,4 @@
+import { AuthModule } from './../auth/auth.module';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NoticeResolver } from './notice.resolver';
@@ -6,7 +7,7 @@ import NoticeSchema from '../../schemas/Notice.model'; // Adjust path to your No
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Notice', schema: NoticeSchema }]),
+    MongooseModule.forFeature([{ name: 'Notice', schema: NoticeSchema }]), AuthModule,
   ],
   providers: [NoticeResolver, NoticeService],
   exports: [NoticeService]
