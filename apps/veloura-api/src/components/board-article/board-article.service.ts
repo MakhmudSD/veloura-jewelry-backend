@@ -96,7 +96,7 @@ export class BoardArticleService {
 		if (articleStatus === BoardArticleStatus.DELETE) {
 			await this.memberService.memberStatsEditor({
 				_id: memberId,
-				targetKey: 'membeArticles',
+				targetKey: 'memberArticles',
 				modifier: -1,
 			});
 		}

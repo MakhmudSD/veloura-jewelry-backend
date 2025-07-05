@@ -44,8 +44,7 @@ export class BoardArticleResolver {
 		return await this.boardArticleService.getBoardArticle(memberId, articleId);
 	}
 
-	@Roles(MemberType.STORE)
-	@UseGuards(RolesGuard)
+	@UseGuards(AuthGuard)
 	@Mutation((returns) => BoardArticle)
 	public async updateBoardArticle(
 		@Args('input') input: BoardArticleUpdate,
@@ -56,8 +55,7 @@ export class BoardArticleResolver {
 		return await this.boardArticleService.updateBoardArticle(memberId, input);
 	}
 
-	@Roles(MemberType.STORE)
-	@UseGuards(RolesGuard)
+	@UseGuards(WithoutGuard)
 	@Query((returns) => BoardArticles)
 	public async getBoardArticles(
 		@Args('input') input: BoardArticlesInquiry,
