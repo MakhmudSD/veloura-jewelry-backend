@@ -288,7 +288,7 @@ export class ProductService {
 		}
 
 		if (categoryList) {
-			match.productMainCategory = { $in: categoryList };
+			match.productCategory = { $in: categoryList };
 		}
 
 		if (pricesRange) {

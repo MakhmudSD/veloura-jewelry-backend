@@ -20,7 +20,7 @@ export class NoticeInput {
 	noticeContent: string;
 
 	@Field(() => String)
-	memberId: ObjectId; // Set to admin's ID in your resolver/controller
+	memberId?: ObjectId; // Set to admin's ID in your resolver/controller
 }
 
 @InputType()

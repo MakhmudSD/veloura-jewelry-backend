@@ -12,56 +12,52 @@ import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { ObjectId } from 'mongoose';
 import { WithoutGuard } from '../auth/guards/without.guard';
 
-
 @Resolver()
 export class NoticeResolver {
-  constructor(private readonly noticeService: NoticeService) {}
+	constructor(private readonly noticeService: NoticeService) {}
 
-  @Roles(MemberType.ADMIN)
-  @UseGuards(RolesGuard)
-  @Mutation(() => Notice)
-   public async createNotice(
-    @Args('input') input: NoticeInput,
-    @AuthMember('_id') memberId: ObjectId
-  ): Promise<Notice> {
-    console.log('Mutation: createNotice');
-    input.memberId = memberId
-    return await this.noticeService.createNotice(input);
-  }
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	@Mutation(() => Notice)
+	public async createNotice(@Args('input') input: NoticeInput, @AuthMember('_id') memberId: ObjectId): Promise<Notice> {
+		console.log('Mutation: createNotice');
+		input.memberId = memberId;
+		return await this.noticeService.createNotice(input);
+	}
 
-  @Query(() => Notices)
-  public async getNotices(
-    @Args('input') input: NoticeInquiry,
-  ): Promise<Notices> {
-    console.log('Query: getNotices', input);
-    return await this.noticeService.getNotices(input);
-  }
+	@Query(() => Notices)
+	public async getNotices(@Args('input') input: NoticeInquiry): Promise<Notices> {
+		console.log('Query: getNotices', input);
+		return await this.noticeService.getNotices(input);
+	}
 
+	@Query((returns) => Notice)
+	async getNotice(@Args('id') id: string): Promise<Notice> {
+		console.log('Query: getNotice', id);
+		return this.noticeService.getNotice(id);
+	}
 
-    @Query((returns) => Notice)
-    async getNotice(@Args('id') id: string): Promise<Notice> {
-      console.log('Query: getNotice', id);
-      return this.noticeService.getNotice(id);
-    }
-  
-  
+	@Mutation(() => Notice)
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	async updateNotice(@Args('input', { type: () => UpdateNoticeInput }) input: UpdateNoticeInput): Promise<Notice> {
+		console.log('Mutation: updateNotice');
+		return this.noticeService.updateNotice(input);
+	}
 
-    @Mutation(() => Notice)
-    @Roles(MemberType.ADMIN)
-    @UseGuards(RolesGuard)
-    async updateNotice(
-      @Args('id', { type: () => ID }) id: string,
-      @Args('input', { type: () => UpdateNoticeInput }) input: UpdateNoticeInput,
-    ): Promise<Notice> {
-      return this.noticeService.updateNotice(id, input);
-    }
-  
-    @Mutation(() => Boolean)
-    @Roles(MemberType.ADMIN)
-    @UseGuards(RolesGuard)
-    async deleteNotice(
-      @Args('id', { type: () => ID }) id: string,
-    ): Promise<boolean> {
-      return this.noticeService.remove(id);
-    }
+	@Mutation(() => Notice) // ✅ Return type is Notice now
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	async deleteNotice(@Args('input') input: string): Promise<Notice> {
+		console.log('Mutation: deleteNotice');
+		return this.noticeService.deleteNotice(input);
+	}
+
+	@Mutation(() => Notice)
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	async removeNoticePermanently(@Args('input') input: string): Promise<Notice> {
+    console.log('Mutation: removeNoticePermanently');
+		return this.noticeService.removeNoticePermanently(input);
+	}
 }

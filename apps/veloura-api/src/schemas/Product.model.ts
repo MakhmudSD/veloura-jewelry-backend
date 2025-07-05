@@ -1,27 +1,19 @@
 import { Schema } from 'mongoose';
 import {
-	ProductMainCategory,
-	ProductJewelrySubCategory,
 	ProductStatus,
 	ProductMaterial,
 	ProductGender,
 	ProductLocation,
+	ProductCategory,
 } from '../libs/enums/product.enum';
 
 const ProductSchema = new Schema(
 	{
-		productMainCategory: {
+		productCategory: {
 			type: String,
-			enum: ProductMainCategory,
-			default: ProductMainCategory.JEWELRY,
+			enum: ProductCategory,
+			default: ProductCategory.RING,
 			required: true,
-		},
-
-		productJewelrySubCategory: {
-			type: String,
-			enum: ProductJewelrySubCategory,
-			required: true,
-			default: ProductJewelrySubCategory.RING,
 		},
 
 		productLocation: {
@@ -141,14 +133,13 @@ const ProductSchema = new Schema(
 );
 
 ProductSchema.index(
-	{ 
-	  productMainCategory: 1, 
-	  productJewelrySubCategory: 1,
-	  productLocation: 1, 
-	  productTitle: 1, 
-	  productPrice: 1 
+	{
+		productCategory: 1,
+		productLocation: 1,
+		productTitle: 1,
+		productPrice: 1,
 	},
 	{ unique: true },
-  );
+);
 
 export default ProductSchema;

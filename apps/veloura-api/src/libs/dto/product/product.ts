@@ -1,12 +1,11 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { ObjectId } from 'mongoose';
 import {
-	ProductMainCategory,
-	ProductJewelrySubCategory,
 	ProductStatus,
 	ProductMaterial,
 	ProductGender,
 	ProductLocation,
+	ProductCategory,
 } from '../../enums/product.enum';
 import { Member, TotalCounter } from '../member/member';
 import { MeLiked } from '../like/like';
@@ -16,11 +15,8 @@ export class Product {
 	@Field(() => String)
 	_id: ObjectId;
 
-	@Field(() => ProductMainCategory)
-	productMainCategory: ProductMainCategory;
-
-	@Field(() => ProductJewelrySubCategory)
-	productJewelrySubCategory: ProductJewelrySubCategory;
+	@Field(() => ProductCategory)
+	productCategory: ProductCategory;
 
 	@Field(() => ProductLocation, { nullable: true })
 	productLocation: ProductLocation[];
@@ -40,7 +36,7 @@ export class Product {
 	@Field(() => Number)
 	productPrice: number;
 
-	@Field(() => Number, {nullable: true})
+	@Field(() => Number, { nullable: true })
 	productSize: number;
 
 	@Field(() => Int)
@@ -94,7 +90,7 @@ export class Product {
 	@Field(() => Member, { nullable: true })
 	memberData?: Member;
 
-	@Field(() => [MeLiked], {nullable: true})
+	@Field(() => [MeLiked], { nullable: true })
 	meLiked?: MeLiked[];
 }
 

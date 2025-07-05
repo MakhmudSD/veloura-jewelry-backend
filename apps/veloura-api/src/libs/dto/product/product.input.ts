@@ -1,6 +1,6 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { IsIn, IsInt, IsNotEmpty, IsOptional, Length, Min, IsBoolean } from 'class-validator';
-import { ProductStatus, ProductMainCategory, ProductLocation, ProductJewelrySubCategory } from '../../enums/product.enum';
+import { ProductStatus, ProductLocation, ProductCategory } from '../../enums/product.enum';
 import { ObjectId } from 'mongoose';
 import { availableProductOptions, availableProductSorts } from '../../config';
 import { Direction } from '../../enums/common.enum';
@@ -8,12 +8,8 @@ import { Direction } from '../../enums/common.enum';
 @InputType()
 export class ProductInput {
 	@IsNotEmpty()
-	@Field(() => ProductMainCategory)
-	productMainCategory: ProductMainCategory;
-
-	@IsNotEmpty()
-	@Field(() => ProductJewelrySubCategory)
-	productJewelrySubCategory: ProductJewelrySubCategory;
+	@Field(() => ProductCategory)
+	productCategory: ProductCategory;
 
 	@IsNotEmpty()
 	@Field(() => ProductLocation)
@@ -109,8 +105,8 @@ class PISearch {
 	locationList?: ProductLocation[];
 
 	@IsOptional()
-	@Field(() => [ProductMainCategory], { nullable: true })
-	categoryList?: ProductMainCategory[];
+	@Field(() => [ProductCategory], { nullable: true })
+	categoryList?: ProductCategory[];
 
 	@IsOptional()
 	@IsIn(availableProductOptions, { each: true })
@@ -225,7 +221,6 @@ export class AllProductsInquiry {
 	@Field(() => ALPISearch)
 	search: ALPISearch;
 }
-
 
 @InputType()
 export class OrdinaryInquiry {

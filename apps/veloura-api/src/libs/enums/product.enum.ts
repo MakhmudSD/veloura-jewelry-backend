@@ -1,23 +1,14 @@
 import { registerEnumType } from '@nestjs/graphql';
 
-export enum ProductMainCategory {
-  JEWELRY = 'JEWELRY',
-  HANDBAG = 'HANDBAG',
-  WATCH = 'WATCH',
-}
-registerEnumType(ProductMainCategory, {
-  name: 'ProductMainCategory',
-});
-
-export enum ProductJewelrySubCategory {
+export enum ProductCategory {
   RING = 'RING',
   NECKLACE = 'NECKLACE',
   EARRINGS = 'EARRINGS',
   BRACELET = 'BRACELET',
   SET = 'SET',
 }
-registerEnumType(ProductJewelrySubCategory, {
-  name: 'ProductJewelrySubCategory',
+registerEnumType(ProductCategory, {
+  name: 'ProductCategory',
 });
 
 
@@ -55,10 +46,6 @@ export enum ProductMaterial {
   SILVER = 'SILVER',
   PLATINUM = 'PLATINUM',
   DIAMOND = 'DIAMOND',
-  PEARL = 'PEARL',
-  LEATHER = 'LEATHER',
-  FABRIC = 'FABRIC',
-  OTHER = 'OTHER',
 }
 registerEnumType(ProductMaterial, {
   name: 'ProductMaterial',
