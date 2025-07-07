@@ -28,6 +28,10 @@ export class ProductUpdate {
 	productStatus?: ProductStatus;
 
 	@IsOptional()
+	@Field(() => String, { nullable: true })
+	productColor?: string;
+
+	@IsOptional()
 	@Field(() => ProductMaterial, { nullable: true })
 	productMaterial?: ProductMaterial;
 

@@ -20,6 +20,10 @@ export class ProductInput {
 	@Field(() => String)
 	productOrigin: string;
 
+	@IsOptional()
+	@Field(() => String)
+	productColor: string;
+
 	@IsNotEmpty()
 	@Length(3, 100)
 	@Field(() => String)

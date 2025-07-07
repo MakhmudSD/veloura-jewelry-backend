@@ -28,6 +28,11 @@ const ProductSchema = new Schema(
 			default: ProductStatus.AVAILABLE,
 		},
 
+		productColor: {
+			type: String,
+			required: true,
+		},
+
 		productMaterial: {
 			type: String,
 			enum: ProductMaterial,

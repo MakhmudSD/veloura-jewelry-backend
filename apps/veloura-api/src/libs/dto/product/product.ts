@@ -24,6 +24,9 @@ export class Product {
 	@Field(() => ProductStatus)
 	productStatus: ProductStatus;
 
+	@Field(() => String)
+	productColor: string;
+
 	@Field(() => ProductMaterial)
 	productMaterial: ProductMaterial;
 
