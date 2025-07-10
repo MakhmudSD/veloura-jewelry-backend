@@ -94,12 +94,12 @@ const ProductSchema = new Schema(
 			default: '',
 		},
 
-		productExchangeable: {
+		productBarter: {
 			type: Boolean,
 			default: false,
 		},
 
-		productRentalAvailable: {
+		productRent: {
 			type: Boolean,
 			default: false,
 		},

@@ -25,7 +25,10 @@ export class Product {
 	productStatus: ProductStatus;
 
 	@Field(() => String)
-	productColor: string;
+	productOrigin?: string;
+
+	@Field(() => String)
+	productColor?: string;
 
 	@Field(() => ProductMaterial)
 	productMaterial: ProductMaterial;
@@ -64,10 +67,10 @@ export class Product {
 	productIsLimitedEdition: boolean;
 
 	@Field(() => Boolean)
-	productExchangeable: boolean;
+	productBarter: boolean;
 
 	@Field(() => Boolean)
-	productRentalAvailable: boolean;
+	productRent: boolean;
 
 	@Field(() => [String])
 	productImages: string[];

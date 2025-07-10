@@ -5,6 +5,7 @@ export enum ProductCategory {
   NECKLACE = 'NECKLACE',
   EARRINGS = 'EARRINGS',
   BRACELET = 'BRACELET',
+  DIAMOND = 'DIAMOND',
   SET = 'SET',
 }
 registerEnumType(ProductCategory, {
@@ -43,9 +44,17 @@ registerEnumType(ProductStatus, {
 
 export enum ProductMaterial {
   GOLD = 'GOLD',
-  SILVER = 'SILVER',
-  PLATINUM = 'PLATINUM',
-  DIAMOND = 'DIAMOND',
+	SILVER = 'SILVER',
+	PLATINUM = 'PLATINUM',
+	WHITE_GOLD = 'WHITE_GOLD',
+	ROSE_GOLD = 'ROSE_GOLD',
+	STERLING_SILVER = 'STERLING_SILVER',
+	DIAMOND = 'DIAMOND',
+	GEMSTONE = 'GEMSTONE',
+	PEARL = 'PEARL',
+	TITANIUM = 'TITANIUM',
+	BRONZE = 'BRONZE',
+	CRYSTAL = 'CRYSTAL',
 }
 registerEnumType(ProductMaterial, {
   name: 'ProductMaterial',

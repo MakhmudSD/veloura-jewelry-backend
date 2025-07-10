@@ -112,7 +112,7 @@ export class MembersInquiry {
 	@Field(() => Direction, { nullable: true })
 	direction?: Direction;
 
-	@IsNotEmpty()
+	@IsOptional()
 	@Field(() => MISearch)
 	search: MISearch;
 }

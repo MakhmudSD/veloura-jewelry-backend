@@ -1,6 +1,6 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { IsIn, IsInt, IsNotEmpty, IsOptional, Length, Min, IsBoolean } from 'class-validator';
-import { ProductStatus, ProductLocation, ProductCategory } from '../../enums/product.enum';
+import { ProductStatus, ProductLocation, ProductCategory, ProductMaterial, ProductGender } from '../../enums/product.enum';
 import { ObjectId } from 'mongoose';
 import { availableProductOptions, availableProductSorts } from '../../config';
 import { Direction } from '../../enums/common.enum';
@@ -18,16 +18,16 @@ export class ProductInput {
 	@IsNotEmpty()
 	@Length(3, 100)
 	@Field(() => String)
-	productOrigin: string;
+	productOrigin?: string;
 
 	@IsOptional()
 	@Field(() => String)
-	productColor: string;
+	productColor?: string;
 
 	@IsNotEmpty()
 	@Length(3, 100)
 	@Field(() => String)
-	productMaterial: string;
+	productMaterial: ProductMaterial;
 
 	@IsNotEmpty()
 	@Length(3, 100)
@@ -64,12 +64,12 @@ export class ProductInput {
 	@IsOptional()
 	@IsBoolean()
 	@Field(() => Boolean, { nullable: true })
-	productExchangeable?: boolean;
+	productBarter?: boolean;
 
 	@IsOptional()
 	@IsBoolean()
 	@Field(() => Boolean, { nullable: true })
-	productRentalAvailable?: boolean;
+	productRent?: boolean;
 
 	memberId?: ObjectId;
 
@@ -77,7 +77,7 @@ export class ProductInput {
 
 	@IsOptional()
 	@Field(() => Date, { nullable: true })
-	constructedAt?: Date;
+	productYears?: Date;
 }
 
 @InputType()
@@ -111,6 +111,22 @@ class PISearch {
 	@IsOptional()
 	@Field(() => [ProductCategory], { nullable: true })
 	categoryList?: ProductCategory[];
+
+	@IsOptional()
+	@Field(() => [ProductMaterial], { nullable: true })
+	materialList?: ProductMaterial[];
+
+	@IsOptional()
+	@Field(() => [ProductGender], { nullable: true })
+	genderList?: ProductGender[];
+
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	colorList?: string;
+
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	originList?: string;
 
 	@IsOptional()
 	@IsIn(availableProductOptions, { each: true })
