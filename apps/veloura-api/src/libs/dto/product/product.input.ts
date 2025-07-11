@@ -125,6 +125,10 @@ class PISearch {
 	colorList?: string;
 
 	@IsOptional()
+	@Field(() => Number, { nullable: true })
+	sizeList?: number;
+
+	@IsOptional()
 	@Field(() => String, { nullable: true })
 	originList?: string;
 

@@ -277,18 +277,46 @@ export class ProductService {
 		const search = input.search;
 		if (!search) return;
 
-		const { memberId, locationList, categoryList, pricesRange, dateRange, options, text } = input.search;
+		const {
+			memberId,
+			locationList,
+			categoryList,
+			materialList,
+			colorList,
+			originList,
+			genderList,
+			pricesRange,
+			dateRange,
+			options,
+			text,
+		} = input.search;
 
 		if (memberId) {
 			match.memberId = shapeIntoMongoObjectId(memberId);
 		}
 
-		if (locationList) {
+		if (locationList && locationList.length) {
 			match.productLocation = { $in: locationList };
 		}
 
-		if (categoryList) {
+		if (categoryList && categoryList.length) {
 			match.productCategory = { $in: categoryList };
+		}
+
+		if (materialList && materialList.length) {
+			match.productMaterial = { $in: materialList };
+		}
+
+		if (genderList && genderList.length) {
+			match.productGender = { $in: genderList };
+		}
+
+		if (colorList && colorList.length) {
+			match.productColor = { $in: colorList };
+		}
+
+		if (originList && originList.length) {
+			match.productOrigin = { $in: originList };
 		}
 
 		if (pricesRange) {
