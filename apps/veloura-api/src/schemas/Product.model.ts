@@ -94,7 +94,7 @@ const ProductSchema = new Schema(
 			required: true,
 		},
 
-		productDescription: {
+		productDesc: {
 			type: String,
 			default: '',
 		},
@@ -109,9 +109,9 @@ const ProductSchema = new Schema(
 			default: false,
 		},
 
-		productIsLimitedEdition: {
-			type: Boolean,
-			default: false,
+		productWeightUnit: {
+			type: Number,
+			default: 0
 		},
 
 		productOrigin: {

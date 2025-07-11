@@ -61,8 +61,8 @@ export class ProductInput {
 	productDesc?: string;
 
 	@IsOptional()
-	@Field(() => Boolean, { nullable: true })
-	productIsLimitedEdition?: boolean;
+	@Field(() => Number, { nullable: true })
+	productWeightUnit?: number;
 
 	@IsOptional()
 	@IsBoolean()

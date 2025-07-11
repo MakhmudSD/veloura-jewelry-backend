@@ -66,8 +66,8 @@ export class Product {
 	@Field(() => String, { nullable: true })
 	productDesc?: string;
 
-	@Field(() => Boolean)
-	productIsLimitedEdition: boolean;
+	@Field(() => Number, { nullable: true})
+	productWeightUnit?: number;
 
 	@Field(() => Boolean)
 	productBarter: boolean;

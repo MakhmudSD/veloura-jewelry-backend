@@ -75,8 +75,8 @@ export class ProductUpdate {
 	productDesc?: string;
 
 	@IsOptional()
-	@Field(() => Boolean, { nullable: true })
-	productIsLimitedEdition?: boolean;
+	@Field(() => Number, { nullable: true })
+	productWeightUnit?: Number;
 
 	@IsOptional()
 	@IsBoolean()
