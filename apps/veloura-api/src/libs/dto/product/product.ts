@@ -18,16 +18,19 @@ export class Product {
 	@Field(() => ProductCategory)
 	productCategory: ProductCategory;
 
+	@Field(() => String, { nullable: true })
+	productBrand?: string; // ✅ NEW FIELD
+
 	@Field(() => ProductLocation, { nullable: true })
 	productLocation: ProductLocation[];
 
 	@Field(() => ProductStatus)
 	productStatus: ProductStatus;
 
-	@Field(() => String)
+	@Field(() => String, {nullable: true})
 	productOrigin?: string;
 
-	@Field(() => String)
+	@Field(() => String, {nullable: true})
 	productColor?: string;
 
 	@Field(() => ProductMaterial)
@@ -43,7 +46,7 @@ export class Product {
 	productPrice: number;
 
 	@Field(() => Number, { nullable: true })
-	productSize: number;
+	productSize?: number;
 
 	@Field(() => Int)
 	productStock: number;

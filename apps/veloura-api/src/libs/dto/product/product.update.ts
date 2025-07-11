@@ -20,6 +20,10 @@ export class ProductUpdate {
 	productCategory?: ProductCategory;
 
 	@IsOptional()
+	@Field(() => String, { nullable: true })
+	productBrand?: string;
+
+	@IsOptional()
 	@Field(() => ProductLocation, { nullable: true })
 	productLocation?: ProductLocation;
 

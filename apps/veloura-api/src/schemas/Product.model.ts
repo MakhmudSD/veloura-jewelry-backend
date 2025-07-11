@@ -16,6 +16,11 @@ const ProductSchema = new Schema(
 			required: true,
 		},
 
+		productBrand: {
+			type: String,
+		},
+
+
 		productLocation: {
 			type: String,
 			enum: ProductLocation,
@@ -109,9 +114,8 @@ const ProductSchema = new Schema(
 			default: false,
 		},
 
-		productOriginLabel: {
-			type: String, // e.g., "Made in Switzerland"
-			default: '',
+		productOrigin: {
+			type: String
 		},
 
 		memberId: {

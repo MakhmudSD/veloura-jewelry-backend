@@ -15,13 +15,16 @@ export class ProductInput {
 	@Field(() => ProductLocation)
 	productLocation: ProductLocation;
 
-	@IsNotEmpty()
-	@Length(3, 100)
-	@Field(() => String)
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	productBrand?: string;
+
+	@IsOptional()
+	@Field(() => String, {nullable: true})
 	productOrigin?: string;
 
 	@IsOptional()
-	@Field(() => String)
+	@Field(() => String, { nullable: true})
 	productColor?: string;
 
 	@IsNotEmpty()
@@ -39,7 +42,7 @@ export class ProductInput {
 	productPrice: number;
 
 	@IsOptional()
-	@Field(() => Number)
+	@Field(() => Number, { nullable: true})
 	productSize?: Number;
 
 	@IsNotEmpty()
