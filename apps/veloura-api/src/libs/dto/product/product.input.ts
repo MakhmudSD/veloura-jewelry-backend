@@ -129,7 +129,7 @@ class PISearch {
 
 	@IsOptional()
 	@Field(() => Number, { nullable: true })
-	sizeList?: number;
+	weightList?: number;
 
 	@IsOptional()
 	@Field(() => String, { nullable: true })
@@ -147,6 +147,10 @@ class PISearch {
 	@IsOptional()
 	@Field(() => DateRange, { nullable: true })
 	dateRange?: DateRange;
+
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	brand?: string;
 
 	@IsOptional()
 	@Field(() => String, { nullable: true })

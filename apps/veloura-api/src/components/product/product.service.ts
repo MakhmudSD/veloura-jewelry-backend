@@ -127,6 +127,10 @@ export class ProductService {
 	// getProducts
 	public async getProducts(memberId: ObjectId, input: ProductsInquiry): Promise<Products> {
 		const match: T = { productStatus: ProductStatus.AVAILABLE, authorId: { $ne: null } };
+		  // Add case-insensitive brand filtering here:
+		  if (input.search.brand) {
+			match.productBrand = { $regex: `^${input.search.brand}$`, $options: 'i' };
+		  }
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
 		this.shapeMatchQuery(match, input);
