@@ -36,6 +36,7 @@ class CISearch {
 
 @InputType()
 export class CommentsInquiry {
+	[x: string]: any;
 	@IsNotEmpty()
 	@Min(1)
 	@Field(() => Int)
