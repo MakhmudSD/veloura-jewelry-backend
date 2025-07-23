@@ -42,8 +42,11 @@ export class Product {
 	@Field(() => String)
 	productTitle: string;
 
-	@Field(() => Number)
-	productPrice: number;
+	@Field(() => String, { nullable: true })
+	productAddress?: string;
+
+	@Field(() => Number, { nullable: true })
+	productPrice?: number;
 
 	@Field(() => Number, { nullable: true })
 	productSize?: number;

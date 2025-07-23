@@ -24,6 +24,10 @@ export class ProductInput {
 	productOrigin?: string;
 
 	@IsOptional()
+	@Field(() => String, { nullable: true })
+	productAddress?: string;
+
+	@IsOptional()
 	@Field(() => String, { nullable: true})
 	productColor?: string;
 
@@ -44,6 +48,10 @@ export class ProductInput {
 	@IsOptional()
 	@Field(() => Number, { nullable: true})
 	productSize?: Number;
+
+	@IsNotEmpty()
+	@Field(() => String)
+	productGender: ProductGender;
 
 	@IsNotEmpty()
 	@IsInt()
@@ -126,6 +134,10 @@ class PISearch {
 	@IsOptional()
 	@Field(() => String, { nullable: true })
 	colorList?: string;
+
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	productTitle?: string;
 
 	@IsOptional()
 	@Field(() => Number, { nullable: true })

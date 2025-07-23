@@ -129,7 +129,10 @@ export class ProductService {
 		const match: T = { productStatus: ProductStatus.AVAILABLE, authorId: { $ne: null } };
 		  // Add case-insensitive brand filtering here:
 		  if (input.search.brand) {
-			match.productBrand = { $regex: `^${input.search.brand}$`, $options: 'i' };
+			match.$or = [
+			  { productTitle: { $regex: input.search.brand, $options: 'i' } },
+			  { productBrand: { $regex: input.search.brand, $options: 'i' } },
+			];
 		  }
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 

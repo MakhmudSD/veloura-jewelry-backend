@@ -35,8 +35,12 @@ const ProductSchema = new Schema(
 
 		productColor: {
 			type: String,
-			required: true,
 		},
+
+		productAdress: {
+			type: String,
+		},
+
 
 		productMaterial: {
 			type: String,
