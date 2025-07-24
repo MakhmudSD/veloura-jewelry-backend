@@ -14,7 +14,7 @@ import { LikeService } from '../like/like.service';
 import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
-import { lookupAuthMemberLiked } from '../../libs/config';
+import { lookupAuthMemberLiked, shapeIntoMongoObjectId } from '../../libs/config';
 
 @Injectable()
 export class MemberService {
@@ -198,5 +198,21 @@ export class MemberService {
 			await this,
 			this.memberModel.findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true }).exec()
 		);
+	}
+
+	public async addUserPoint(member: Member, point: number): Promise<Member> {
+		const memberId = shapeIntoMongoObjectId(member._id);
+		const result = await this.memberModel
+			.findOneAndUpdate(
+				{
+					_id: memberId,
+					memberType: MemberType.USER,
+					memberStatus: MemberStatus.ACTIVE,
+				},
+				{ $inc: { memberPoints: point } },
+				{ new: true },
+			)
+			.exec();
+		return result as unknown as Member;
 	}
 }

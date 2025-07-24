@@ -1,7 +1,7 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { OrderStatus } from '../../enums/orders.enum';
-import { OrderItemInput } from './order.input.';
 import { Product } from '../product/product';
+import { OrderItem } from './order.input.';
 
 @ObjectType()
 export class Order {
@@ -17,6 +17,9 @@ export class Order {
 	@Field(() => OrderStatus)
 	orderStatus: OrderStatus;
 
+	@Field(() => [OrderItem], { nullable: true })
+	orderItems?: OrderItem[]; // this fixes the CannotDetermineOutputTypeError
+
 	@Field(() => String)
 	memberId: string;
 
@@ -26,9 +29,6 @@ export class Order {
 	@Field(() => Date)
 	updatedAt: Date;
 
-	@Field(() => [OrderItemInput])
-	orderItems: OrderItemInput[];
-
-	@Field(() => [Product])
-	productData: Product[];
+	@Field(() => [Product], { nullable: true })
+	productData?: Product[]; // this fixes the CannotDetermineOutputTypeError
 }

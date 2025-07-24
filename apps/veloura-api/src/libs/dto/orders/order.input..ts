@@ -1,29 +1,64 @@
-import { InputType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, ID, InputType } from '@nestjs/graphql';
+import { IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { ObjectId } from 'mongoose';
 import { OrderStatus } from '../../enums/orders.enum';
+
+@ObjectType()
+export class OrderItem {
+	@Field(() => String)
+	id: ObjectId;
+
+	@Field(() => Int)
+	itemQuantity: number;
+
+	@Field(() => Int)
+	itemPrice: number;
+
+	@Field(() => String)
+	productId: ObjectId;
+
+	@Field(() => String, { nullable: true })
+	orderId?: ObjectId;
+
+	@Field(() => Date)
+	createdAt: Date;
+
+	@Field(() => Date)
+	updatedAt: Date;
+}
 
 @InputType()
 export class OrderItemInput {
-  @Field(() => Int)
-  itemQuantity: number;
+	@Field(() => String)
+	@IsNotEmpty()
+	productId: string;
 
-  @Field(() => Int)
-  itemPrice: number;
+	@Field(() => Int)
+	@IsNotEmpty()
+	itemQuantity: number;
 
-  @Field(() => String)
-  productId: string;
+	@Field(() => Int)
+	@IsNotEmpty()
+	itemPrice: number;
 
-  @Field(() => String, { nullable: true })
-  orderId?: string;
+	@Field(() => String, { nullable: true })
+	@IsOptional()
+	orderId?: ObjectId;
 }
 
 @InputType()
 export class OrderInquiry {
-  @Field(() => Int)
-  page: number;
+	@IsNotEmpty()
+	@Min(1)
+	@Field(() => Int)
+	page: number;
 
-  @Field(() => Int)
-  limit: number;
- 
-  @Field(() => OrderStatus)
-  orderStatus: OrderStatus;
+	@IsNotEmpty()
+	@Min(1)
+	@Field(() => Int)
+	limit: number;
+
+	@IsNotEmpty()
+	@Field(() => OrderStatus)
+	orderStatus: OrderStatus;
 }
