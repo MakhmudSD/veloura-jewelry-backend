@@ -22,33 +22,24 @@ export class OrderResolver {
 		const result = await this.orderService.createOrder(memberId, input);
 		return result;
 	}
+
+	// Instead of manually accessing context.req.user
 	@Query(() => [Order])
 	@UseGuards(AuthGuard)
-	public async getMyOrders(@Args('input') input: OrderInquiry, @Context() context: any): Promise<Order[]> {
-		const req = context.req;
-
-		if (!req.user) {
-			throw new Error('Unauthorized: user not found in request');
-		}
-
-		const memberId = req.user.memberId || req.user._id || req.user.id;
-
+	public async getMyOrders(
+		@Args('input') input: OrderInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Order[]> {
 		console.log('memberId passed to service:', memberId);
-
 		return this.orderService.getMyOrders(memberId, input);
 	}
 
-	@UseGuards(AuthGuard)
 	@Mutation(() => Order)
-	public async updateOrder(@Args('input') input: OrderUpdateInput, @Context() context: any): Promise<Order> {
-		const req = context.req;
-
-		if (!req.user) throw new Error('Unauthorized: user not found in request');
-
-		const memberId = req.user.memberId || req.user._id || req.user.id;
-
-		if (!memberId) throw new Error('Unauthorized: memberId not found in user');
-
+	@UseGuards(AuthGuard)
+	public async updateOrder(
+		@Args('input') input: OrderUpdateInput,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Order> {
 		return this.orderService.updateOrder(memberId, input);
 	}
 }

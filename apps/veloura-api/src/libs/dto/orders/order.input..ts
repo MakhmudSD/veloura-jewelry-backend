@@ -2,36 +2,41 @@ import { ObjectType, Field, Int, ID, InputType } from '@nestjs/graphql';
 import { IsNotEmpty, IsOptional, Min } from 'class-validator';
 import { ObjectId } from 'mongoose';
 import { OrderStatus } from '../../enums/orders.enum';
+import { Product } from '../product/product';
 
 @ObjectType()
 export class OrderItem {
-	@Field(() => String)
-	id: ObjectId;
+  @Field(() => String)
+  _id: ObjectId;
 
-	@Field(() => Int)
-	itemQuantity: number;
+  @Field(() => Int)
+  itemQuantity: number;
 
-	@Field(() => Int)
-	itemPrice: number;
+  @Field(() => Int)
+  itemPrice: number;
 
-	@Field(() => String)
-	productId: ObjectId;
+  @Field(() => String)  // productId is scalar string (ObjectId as string)
+  productId: ObjectId;
 
-	@Field(() => String, { nullable: true })
-	orderId?: ObjectId;
+  @Field(() => Product, { nullable: true })  // productData is Product type
+  productData?: Product;
 
-	@Field(() => Date)
-	createdAt: Date;
+  @Field(() => String, { nullable: true })
+  orderId?: ObjectId;
 
-	@Field(() => Date)
-	updatedAt: Date;
+  @Field(() => Date)
+  createdAt: Date;
+
+  @Field(() => Date)
+  updatedAt: Date;
 }
+
 
 @InputType()
 export class OrderItemInput {
 	@Field(() => String)
 	@IsNotEmpty()
-	productId: string;
+	productId: ObjectId;
 
 	@Field(() => Int)
 	@IsNotEmpty()

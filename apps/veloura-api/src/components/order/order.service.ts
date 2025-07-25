@@ -51,43 +51,66 @@ export class OrderService {
 		if (!memberId) {
 			throw new Error('Invalid memberId');
 		}
-
-		const matchStage: any = { memberId };
-
-		if (inquiry.orderStatus) {
-			matchStage.orderStatus = inquiry.orderStatus;
-		}
-		const result = await this.orderModel
-			.aggregate([
-				{ $match: matchStage },
-				{ $sort: { updatedAt: -1 } },
-				{ $skip: (inquiry.page - 1) * inquiry.limit },
-				{ $limit: inquiry.limit },
-				{
-					$lookup: {
-						from: 'orderitems',
-						localField: '_id',
-						foreignField: 'orderId',
-						as: 'orderItems',
-					},
+	
+		const result = await this.orderModel.aggregate([
+			{ $match: { memberId } },
+			{ $sort: { updatedAt: -1 } },
+			{ $skip: (inquiry.page - 1) * inquiry.limit },
+			{ $limit: inquiry.limit },
+	
+			// Lookup orderItems
+			{
+				$lookup: {
+					from: 'orderitems',
+					localField: '_id',
+					foreignField: 'orderId',
+					as: 'orderItems',
 				},
-				{
-					$lookup: {
-						from: 'products',
-						localField: 'orderItems.productId',
-						foreignField: '_id',
-						as: 'productData',
-					},
+			},
+			{ $unwind: { path: '$orderItems', preserveNullAndEmptyArrays: true } },
+	
+			// Lookup product info
+			{
+				$lookup: {
+					from: 'products',
+					localField: 'orderItems.productId',
+					foreignField: '_id',
+					as: 'productData',
 				},
-			])
-			.exec();
-
+			},
+			{ $unwind: { path: '$productData', preserveNullAndEmptyArrays: true } },
+	
+			// Merge productData into orderItems
+			{
+				$addFields: {
+					'orderItems.productData': '$productData',
+				},
+			},
+	
+			// Group back orders
+			{
+				$group: {
+					_id: '$_id',
+					orderTotal: { $first: '$orderTotal' },
+					orderDelivery: { $first: '$orderDelivery' },
+					orderStatus: { $first: '$orderStatus' },
+					memberId: { $first: '$memberId' },
+					createdAt: { $first: '$createdAt' },
+					updatedAt: { $first: '$updatedAt' },
+					orderItems: { $push: '$orderItems' },
+				},
+			},
+	
+			{ $sort: { updatedAt: -1 } },
+		]).exec();
+	
 		if (!result || result.length === 0) {
 			throw new Error('No data found!');
 		}
-
+	
 		return result;
 	}
+	
 
 	// Service
 	public async updateOrder(memberId: ObjectId, input: OrderUpdateInput): Promise<Order> {
