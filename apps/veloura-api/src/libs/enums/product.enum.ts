@@ -1,12 +1,13 @@
 import { registerEnumType } from '@nestjs/graphql';
 
 export enum ProductCategory {
-  RING = 'RING',
-  NECKLACE = 'NECKLACE',
-  EARRINGS = 'EARRINGS',
-  BRACELET = 'BRACELET',
-  DIAMOND = 'DIAMOND',
-  SET = 'SET',
+	RING = 'RING',
+	NECKLACE = 'NECKLACE',
+	EARRINGS = 'EARRINGS',
+	BRACELET = 'BRACELET',
+	DIAMOND = 'DIAMOND',
+	GIFT = 'GIFT',
+	WEDDING_RING = 'WEDDING_RING',
 }
 registerEnumType(ProductCategory, {
   name: 'ProductCategory',

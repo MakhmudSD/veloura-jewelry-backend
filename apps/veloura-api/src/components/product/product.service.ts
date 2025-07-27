@@ -134,6 +134,10 @@ export class ProductService {
 			  { productBrand: { $regex: input.search.brand, $options: 'i' } },
 			];
 		  }
+
+		//   if (input.search?.categoryList?.length) {
+		// 	match.productCategory = { $in: input.search.categoryList };
+		//   }
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
 		this.shapeMatchQuery(match, input);
