@@ -349,9 +349,9 @@ export class ProductService {
 				$regex: new RegExp(text, 'i'),
 			};
 		}
-
-		if (options) {
-			match['$or'] = options.map((key) => ({ [key]: true }));
+		const ors = options?.map((key) => ({ [key]: true })) || [];
+		if (ors.length > 0) {
+		  match['$or'] = ors;
 		}
 	}
 
