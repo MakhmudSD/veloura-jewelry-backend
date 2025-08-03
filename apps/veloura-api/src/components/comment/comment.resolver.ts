@@ -27,6 +27,16 @@ export class CommentResolver {
 		return await this.commentService.createComment(memberId, input);
 	}
 
+	@UseGuards(AuthGuard)
+	@Mutation(() => Comment)
+	public async updateComment(
+	@Args('input') input: CommentUpdate,
+	@AuthMember('_id') memberId: ObjectId,
+	): Promise<Comment> {
+	const result = await this.commentService.updateComment(memberId, input);
+	return result;
+	}
+
 	@UseGuards(WithoutGuard)
 	@Query((returns) => Comments)
 	public async getComments(
