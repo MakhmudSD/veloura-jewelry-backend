@@ -5,7 +5,7 @@ import { T } from './types/common';
 
 export const availableStoreSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews', 'memberRank'];
 export const availableMemberSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews'];
-export const availableProductOptions = ['productBarter', 'productRent'];
+export const availableProductOptions = ['productBarter',  'productLimited'];
 export const availableProductSorts = [
 	'createdAt',
 	'updatedAt',

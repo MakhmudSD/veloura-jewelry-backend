@@ -126,7 +126,7 @@ export class ProductService {
 
 	// getProducts
 	public async getProducts(memberId: ObjectId, input: ProductsInquiry): Promise<Products> {
-		const match: T = { productStatus: ProductStatus.AVAILABLE, authorId: { $ne: null } };
+		const match: T = { productStatus: ProductStatus.AVAILABLE };
 		  // Add case-insensitive brand filtering here:
 		  if (input.search.brand) {
 			match.$or = [

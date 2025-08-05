@@ -28,6 +28,10 @@ export class ProductUpdate {
 	productLocation?: ProductLocation;
 
 	@IsOptional()
+	@Field(() => String, { nullable: true })
+	productAddress?: string;
+
+	@IsOptional()
 	@Field(() => ProductStatus, { nullable: true })
 	productStatus?: ProductStatus;
 
@@ -82,6 +86,11 @@ export class ProductUpdate {
 	@IsBoolean()
 	@Field(() => Boolean, { nullable: true })
 	productBarter?: boolean;
+
+	@IsOptional()
+	@IsBoolean()
+	@Field(() => Boolean, { nullable: true })
+	productLimited?: boolean;
 
 	@IsOptional()
 	@IsBoolean()

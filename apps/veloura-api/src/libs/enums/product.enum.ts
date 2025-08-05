@@ -46,7 +46,7 @@ registerEnumType(ProductStatus, {
 export enum ProductMaterial {
   GOLD = 'GOLD',
 	SILVER = 'SILVER',
-	PLATINUM = 'PLATINUM',
+	PLATINIUM = 'PLATINIUM',
 	WHITE_GOLD = 'WHITE_GOLD',
 	ROSE_GOLD = 'ROSE_GOLD',
 	STERLING_SILVER = 'STERLING_SILVER',

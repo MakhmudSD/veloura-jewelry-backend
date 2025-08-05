@@ -75,8 +75,8 @@ export class Product {
 	@Field(() => Boolean)
 	productBarter: boolean;
 
-	@Field(() => Boolean)
-	productRent: boolean;
+	@Field(() => Boolean, { nullable: true })
+	productLimited?: boolean;
 
 	@Field(() => [String])
 	productImages: string[];

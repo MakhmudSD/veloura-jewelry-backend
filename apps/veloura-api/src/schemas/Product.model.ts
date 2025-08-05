@@ -113,6 +113,11 @@ const ProductSchema = new Schema(
 			default: false,
 		},
 
+		productLimited: {
+			type: Boolean,
+			default: false,
+		},
+
 		productWeightUnit: {
 			type: Number,
 			default: 0
