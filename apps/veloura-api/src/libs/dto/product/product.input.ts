@@ -83,11 +83,6 @@ export class ProductInput {
 	@Field(() => Boolean, { nullable: true })
 	productLimited?: boolean;
 
-	@IsOptional()
-	@IsBoolean()
-	@Field(() => Boolean, { nullable: true })
-	productRent?: boolean;
-
 	memberId?: ObjectId;
 
 	authorId?: ObjectId;

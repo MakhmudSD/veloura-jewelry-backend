@@ -108,11 +108,6 @@ const ProductSchema = new Schema(
 			default: false,
 		},
 
-		productRent: {
-			type: Boolean,
-			default: false,
-		},
-
 		productLimited: {
 			type: Boolean,
 			default: false,
