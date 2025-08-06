@@ -8,6 +8,7 @@ import { ObjectId } from 'mongoose';
 import { MemberType } from '../../libs/enums/member.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 
 @Resolver(() => InquiryOutput)
@@ -27,8 +28,7 @@ export class InquiryResolver {
   }
 
   @Query(() => [InquiryOutput])
-  @Roles(MemberType.ADMIN)
-  @UseGuards(RolesGuard)
+  @UseGuards(AuthGuard)
   async getInquiries(): Promise<InquiryOutput[]> {
     const result = await this.inquiryService.getInquiries();
     return result as unknown as InquiryOutput[]; // Ensure conversion to InquiryOutput
