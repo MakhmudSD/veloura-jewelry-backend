@@ -32,7 +32,7 @@ export class NoticeResolver {
 	}
 
 	@Query((returns) => Notice)
-	async getNotice(@Args('id') id: string): Promise<Notice> {
+	async getNotice(@Args('input') id: string): Promise<Notice> {
 		console.log('Query: getNotice', id);
 		return this.noticeService.getNotice(id);
 	}

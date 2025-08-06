@@ -94,6 +94,21 @@ export class Member {
 }
 
 @ObjectType()
+export class MemberOutput {
+  @Field(() => String)
+  _id: string;
+
+  @Field(() => String)
+  memberNick: string;
+
+  @Field(() => String)
+  memberPhone: string;
+
+  @Field(() => String, { nullable: true })
+  memberImage?: string;
+}
+
+@ObjectType()
 export class TotalCounter {
 	@Field(() => Int, { nullable: true })
 	total?: number;
