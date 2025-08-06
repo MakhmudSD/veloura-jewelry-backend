@@ -5,6 +5,5 @@ export enum InquiryType {
     DELIVERY = 'DELIVERY',
     PRODUCT = 'PRODUCT',
     ACCOUNT = 'ACCOUNT',
-    ORDER = 'ORDER',
   }
   registerEnumType(InquiryType, { name: 'InquiryType' });

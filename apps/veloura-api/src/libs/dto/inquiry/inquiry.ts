@@ -1,10 +1,11 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { InquiryType } from '../../enums/inquiry';
 import { Member, MemberOutput } from '../member/member';
 
 
 @InputType()
 export class CreateInquiryInput {
+  
   @Field(() => InquiryType)
   inquiryType: InquiryType;
 
@@ -45,4 +46,29 @@ export class InquiryOutput {
 
   @Field(() => Date)
   updatedAt: Date;
+}
+
+@ObjectType()
+export class TotalInquiries {
+  @Field(() => Int, { nullable: true })
+  total?: number;
+}
+
+@ObjectType()
+export class InquiryOutputs {
+  @Field(() => [InquiryOutput])
+  list: InquiryOutput[];
+
+  @Field(() => [TotalInquiries], { nullable: true })
+  metaCounter: TotalInquiries[];
+}
+
+
+@InputType()
+export class InquiryPaginationInput {
+  @Field(() => Int)
+  page: number;
+
+  @Field(() => Int)
+  limit: number;
 }
