@@ -10,8 +10,6 @@ import { DatabaseModule } from './database/database.module';
 import { T } from './libs/types/common';
 import { SocketGateway } from './socket/socket.gateway';
 import { SocketModule } from './socket/socket.module';
-import { InquiryService } from './components/inquiry/inquiry.service';
-import { FaqResolver } from './components/faq/faq.resolver';
 
 @Module({
 	imports: [
