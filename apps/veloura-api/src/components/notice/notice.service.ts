@@ -20,50 +20,53 @@ export class NoticeService {
 
 
   // getNotices
-	public async getNotices(input: NoticeInquiry): Promise<Notices> {
-		const { noticeCategory, text, memberId } = input.search;
-		const match: Record<string, any> = {
-			noticeStatus: NoticeStatus.ACTIVE,
-		};
-
-		if (noticeCategory) {
-			match.noticeCategory = noticeCategory;
-		}
-
-		if (text) {
-			match.$or = [
-				{ noticeTitle: { $regex: new RegExp(text, 'i') } },
-				{ noticeContent: { $regex: new RegExp(text, 'i') } },
-			];
-		}
-
-		if (memberId) {
-			match.memberId = shapeIntoMongoObjectId(memberId);
-		}
-
-		const sort: Record<string, any> = {
-			[input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
-		};
-
-		const result = await this.noticeModel
-			.aggregate([
-				{ $match: match },
-				{ $sort: sort },
-				{
-					$facet: {
-						list: [{ $skip: (input.page - 1) * input.limit }, { $limit: input.limit }],
-						metaCounter: [{ $count: 'total' }],
-					},
-				},
-			])
-			.exec();
-
-		if (!result.length) {
-			throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-		}
-
-		return result[0];
+  public async getNotices(input: NoticeInquiry): Promise<Notices> {
+	const { noticeCategory, text, memberId, noticeStatus } = input.search;
+	const match: Record<string, any> = {};
+  
+	if (noticeStatus) {
+	  match.noticeStatus = noticeStatus;
 	}
+  
+	if (noticeCategory) {
+	  match.noticeCategory = noticeCategory;
+	}
+  
+	if (text) {
+	  match.$or = [
+		{ noticeTitle: { $regex: new RegExp(text, 'i') } },
+		{ noticeContent: { $regex: new RegExp(text, 'i') } },
+	  ];
+	}
+  
+	if (memberId) {
+	  match.memberId = shapeIntoMongoObjectId(memberId);
+	}
+  
+	const sort: Record<string, any> = {
+	  [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
+	};
+  
+	const result = await this.noticeModel
+	  .aggregate([
+		{ $match: match },
+		{ $sort: sort },
+		{
+		  $facet: {
+			list: [{ $skip: (input.page - 1) * input.limit }, { $limit: input.limit }],
+			metaCounter: [{ $count: 'total' }],
+		  },
+		},
+	  ])
+	  .exec();
+  
+	if (!result.length) {
+	  throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+	}
+  
+	return result[0];
+  }
+  
 
 
   // getNotice
@@ -90,7 +93,7 @@ export class NoticeService {
 		const updated = await this.noticeModel.findOneAndUpdate(
 			{
 				_id,
-				noticeStatus: { $ne: NoticeStatus.DELETE },
+				noticeStatus: { $ne: NoticeStatus.DELETED },
 			},
 			updateData,
 			{ new: true },
@@ -108,7 +111,7 @@ export class NoticeService {
 	public async deleteNotice(input: string): Promise<Notice> {
 		const updated = await this.noticeModel.findByIdAndUpdate(
 			input,
-			{ noticeStatus: NoticeStatus.DELETE },
+			{ noticeStatus: NoticeStatus.DELETED },
 			{ new: true },
 		);
 
@@ -124,7 +127,7 @@ export class NoticeService {
   public async removeNoticePermanently(id: string): Promise<Notice> {
     const deleted = await this.noticeModel.findOneAndDelete({
       _id: id,
-      noticeStatus: NoticeStatus.DELETE, // ✅ Only allow hard-delete if already soft-deleted
+      noticeStatus: NoticeStatus.DELETED, // ✅ Only allow hard-delete if already soft-deleted
     });
   
     if (!deleted) {
