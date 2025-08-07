@@ -86,11 +86,11 @@ export class Member {
 	@Field(() => Member, { nullable: true })
 	memberData?: Member;
 
-	@Field(() => [MeLiked])
+	@Field(() => [MeLiked], { nullable: true })
 	meLiked?: MeLiked[];
 
-	@Field(() => [MeFollowed])
-	meFollowed?: MeFollowed[]
+	@Field(() => [MeFollowed], { nullable: true })
+	meFollowed?: MeFollowed[];
 }
 
 @ObjectType()

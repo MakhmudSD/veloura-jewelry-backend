@@ -60,14 +60,17 @@ export class MemberResolver {
 		return await this.memberService.updateMember(memberId, input);
 	}
 
-	@UseGuards(WithoutGuard)
-	@Query(() => Member)
-	public async getMember(@Args('memberId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Member> {
-		console.log('Query: getMember');
-		const targetId = shapeIntoMongoObjectId(input);
-		const result = await this.memberService.getMember(memberId, targetId);
-		return result;
-	}
+@UseGuards(WithoutGuard)
+ @Query(() => Member)
+ public async getMember(
+  @Args('memberId') input: string,
+  @AuthMember('_id') memberId: ObjectId,
+ ): Promise<Member> {
+  console.log('Query: getMember');
+  const targetId = shapeIntoMongoObjectId(input);
+  // CORRECTED ORDER
+  return await this.memberService.getMember(targetId, memberId);
+ }
 
 	@UseGuards(WithoutGuard)
 	@Query(() => Members)

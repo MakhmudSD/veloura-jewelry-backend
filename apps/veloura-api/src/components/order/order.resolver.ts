@@ -7,13 +7,17 @@ import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { ObjectId } from 'mongoose';
 import { OrderUpdateInput } from '../../libs/dto/orders/order.update.';
 import { OrderInquiry, OrderItemInput } from '../../libs/dto/orders/order.input.';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { MemberType } from '../../libs/enums/member.enum';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Resolver(() => Order)
 export class OrderResolver {
 	constructor(private readonly orderService: OrderService) {}
 
 	@Mutation(() => Order)
-	@UseGuards(AuthGuard)
+	@Roles(MemberType.USER)
+	@UseGuards(RolesGuard)
 	public async createOrder(
 		@Args('input', { type: () => [OrderItemInput] }) input: OrderItemInput[],
 		@AuthMember('_id') memberId: ObjectId,
@@ -25,7 +29,8 @@ export class OrderResolver {
 
 	// Instead of manually accessing context.req.user
 	@Query(() => [Order])
-	@UseGuards(AuthGuard)
+	@Roles(MemberType.USER)
+	@UseGuards(RolesGuard)
 	public async getMyOrders(
 		@Args('input') input: OrderInquiry,
 		@AuthMember('_id') memberId: ObjectId,
@@ -35,7 +40,8 @@ export class OrderResolver {
 	}
 
 	@Mutation(() => Order)
-	@UseGuards(AuthGuard)
+	@Roles(MemberType.USER)
+	@UseGuards(RolesGuard)
 	public async updateOrder(
 		@Args('input') input: OrderUpdateInput,
 		@AuthMember('_id') memberId: ObjectId,
