@@ -237,7 +237,7 @@ class ALPISearch {
 
 	@IsOptional()
 	@Field(() => [ProductLocation], { nullable: true })
-	productLocationList?: ProductLocation[];
+	productLocation?: ProductLocation[];
 }
 
 @InputType()

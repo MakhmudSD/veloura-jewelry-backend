@@ -95,8 +95,4 @@ export class ProductUpdate {
 	soldAt?: Date;
 
 	deletedAt?: Date;
-
-	@IsOptional()
-	@Field(() => Date, { nullable: true })
-	constructedAt?: Date;
 }

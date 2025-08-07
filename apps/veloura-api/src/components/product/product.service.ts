@@ -213,12 +213,16 @@ export class ProductService {
 	/** ADMIN **/
 
 	public async getAllProductsByAdmin(memberId: ObjectId, input: AllProductsInquiry): Promise<Products> {
-		const { productStatus, productLocationList } = input.search;
+		const { productStatus, productLocation } = input.search;
 		const match: T = {};
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
-
+	
 		if (productStatus) match.productStatus = productStatus;
-		if (productLocationList) match.productLocation = productLocationList;
+	
+		if (productLocation?.length) {
+			match.productLocation = { $in: productLocation }; // ✅ FIXED
+		}
+	
 		const result = await this.productModel
 			.aggregate([
 				{ $match: match },
@@ -237,11 +241,12 @@ export class ProductService {
 				},
 			])
 			.exec();
-
+	
 		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-
+	
 		return result[0];
 	}
+	
 
 	public async updateProductByAdmin(input: ProductUpdate): Promise<Product> {
 		let { productStatus, soldAt, deletedAt } = input;
