@@ -64,7 +64,6 @@ export class NotificationService {
   public async notifyMany(
     items: Array<{
       receiverId: string | ObjectId;
-      authorId: string | ObjectId;
       type: NotificationType;
       group: NotificationGroup;
       title: string;
@@ -86,7 +85,6 @@ export class NotificationService {
       notificationTitle: i.title,
       notificationDesc: i.desc,
       receiverId: i.receiverId as any,
-      authorId: i.authorId as any,
       productId: i.productId as any,
       articleId: i.articleId as any,
       commentId: i.commentId as any,

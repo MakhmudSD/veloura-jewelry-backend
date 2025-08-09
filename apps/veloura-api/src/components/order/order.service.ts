@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Schema } from 'mongoose';
 import { Order } from '../../libs/dto/orders/order';
@@ -12,57 +12,92 @@ import { OrderStatus } from '../../libs/enums/orders.enum';
 import { Product } from '../../libs/dto/product/product';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class OrderService {
 	constructor(
 		@InjectModel('Order') private readonly orderModel: Model<Order>,
-		@InjectModel('Product') private readonly productModel: Model<Product>, // Corrected the type from Model<Order> to Model<Product>
+		@InjectModel('Product') private readonly productModel: Model<Product>,
 		@InjectModel('OrderItem') private readonly orderItemModel: Model<OrderItem>,
-		private readonly memberService: MemberService,
+		@InjectModel('Member') private readonly memberModel: Model<Member>,
+		private readonly memberService: MemberService,            // use this to fetch members
 		private readonly notificationService: NotificationService,
+		private readonly productService: ProductService,
 	) {}
 
+	
 	async createOrder(memberId: ObjectId, input: OrderItemInput[]): Promise<Order> {
-		const amount = input.reduce((acc, item) => acc + item.itemPrice * item.itemQuantity, 0);
-		const delivery = amount < 500000 ? 30000 : 0;
-
-		try {
-			const newOrder = await this.orderModel.create({
-				orderTotal: amount + delivery,
-				orderDelivery: delivery,
-				memberId,
-			});
-
-			await this.recordOrderItems(shapeIntoMongoObjectId(newOrder._id), input);
+	  const amount = input.reduce((acc, item) => acc + item.itemPrice * item.itemQuantity, 0);
+	  const delivery = amount < 500000 ? 30000 : 0;
+	
+	  try {
+		// 1) Create order
+		const newOrder = await this.orderModel.create({
+		  orderTotal: amount + delivery,
+		  orderDelivery: delivery,
+		  memberId, // buyer
+		});
+	
+		// 2) Save items
+		await this.recordOrderItems(shapeIntoMongoObjectId(newOrder._id), input);
+	
+		// 3) Resolve BUYER (must exist as Member)
+		const buyerDoc = await this.memberModel.findById(memberId).lean();
+		const buyerNick = buyerDoc?.memberNick || 'A customer';
+	
+		// 4) Resolve SELLERS from products (unique member ids)
+		const productIds = input.map(i => i.productId);
+		const products = await Promise.all(productIds.map(id => this.productService.findById(id)));
+		const rawSellerIds = products
+		  .map(p => (p as any)?.memberId || (p as any)?.ownerId || (p as any)?.authorId)
+		  .filter(Boolean)
+		  .map((id: any) => String(id));
+	
+		const sellerIdsUnique = Array.from(new Set(rawSellerIds)).map(shapeIntoMongoObjectId);
+	
+		// 5) Verify sellers actually exist in Member collection
+		const sellersDocs = sellerIdsUnique.length
+		  ? await this.memberModel.find({ _id: { $in: sellerIdsUnique } }, { _id: 1 }).lean()
+		  : [];
+		const existingSellerIds = new Set(sellersDocs.map(d => String(d._id)));
+	
+		// 6) Notify SELLERS (receiver = seller member id). Skip invalid/self ids.
+		await Promise.all(
+		  Array.from(existingSellerIds).map(async sid => {
+			if (sid === String(memberId)) return; // buyer == seller, skip
 			await this.notificationService.notify({
-				receiverId: newOrder._id,
-				authorId: newOrder.memberId,  // or a system/admin id
-				type: NotificationType.ORDER,
-				group: NotificationGroup.PRODUCT,
-				title: 'Order placed',
-				desc: `Order #${newOrder._id}`,
-				refId: newOrder._id,
-				// Removed productId as it does not exist on the Order type
-			  });
-		  
-			  // 3) optionally notify seller
-			  await this.notificationService.notify({
-				receiverId: newOrder._id,
-				authorId: newOrder.memberId,
-				type: NotificationType.ORDER,
-				group: NotificationGroup.PRODUCT,
-				title: 'You received a new order',
-				desc: `Order #${newOrder._id}`,
-				refId: newOrder._id,
-				productId: newOrder._id,	
-			  });
-			return newOrder;
-		} catch (err) {
-			console.error('ERROR on createOrder:', err);
-			throw new Error(Message.CREATE_FAILED);
-		}
+			  receiverId: shapeIntoMongoObjectId(sid), // ✅ valid Member
+			  authorId: memberId,                      // ✅ buyer is a Member
+			  type: NotificationType.ORDER,
+			  group: NotificationGroup.PRODUCT,
+			  title: 'New order',
+			  desc: `${buyerNick} placed an order.`,
+			  refId: newOrder._id,                     // deep link target if you add an order page
+			});
+		  })
+		);
+	
+		// 7) Optionally notify BUYER (receiver = buyer). Choose a valid author:
+		// pick any existing seller if present; otherwise fallback to buyer themself.
+		const anySellerId = sellersDocs[0]?._id || memberId;
+		await this.notificationService.notify({
+		  receiverId: memberId,          // ✅ buyer (Member)
+		  authorId: anySellerId,         // ✅ valid Member (seller or buyer)
+		  type: NotificationType.ORDER,
+		  group: NotificationGroup.PRODUCT,
+		  title: 'Order created',
+		  desc: 'Your order has been created.',
+		  refId: newOrder._id,
+		});
+	
+		return newOrder;
+	  } catch (err) {
+		console.error('ERROR on createOrder:', err);
+		throw new InternalServerErrorException('Create failed.');
+	  }
 	}
+	
 
 	async recordOrderItems(orderId: ObjectId, items: OrderItemInput[]) {
 		const enrichedItems = await Promise.all(

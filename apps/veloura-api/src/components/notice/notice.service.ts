@@ -23,22 +23,16 @@ export class NoticeService {
 
   // createNotice
   public async createNotice(input: NoticeInput): Promise<Notice> {
-    // Create the notice
     const notice = await this.noticeModel.create(input);
 
-    // Broadcast to active users (best-effort; don't block creation)
     try {
       const users = await this.memberModel.find({ isActive: true }, { _id: 1 }).lean();
 
       if (users?.length) {
-        // Use the creator/author of the notice as the notification author.
-        // Assuming NoticeInput has memberId (admin creator). If your field name differs, change below.
-        const authorId = (input as any).memberId;
 
         await this.notificationService.notifyMany(
           users.map(u => ({
             receiverId: u._id,
-            authorId, // admin who created the notice
             type: NotificationType.NOTICE,
             group: NotificationGroup.ARTICLE,
             title: 'New site notice',
@@ -48,8 +42,7 @@ export class NoticeService {
         );
       }
     } catch (e) {
-      // Log and continue — we don't want to fail the notice creation if broadcast fails
-      // console.error('Broadcast notice notifications failed:', e);
+      console.error('Broadcast notice notifications failed:', e);
     }
 
     return notice;

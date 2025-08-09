@@ -31,7 +31,7 @@ export class NoticeResolver {
 		return await this.noticeService.getNotices(input);
 	}
 
-	@Query((returns) => Notice)
+	@Query(() => Notice)
 	async getNotice(@Args('input') id: string): Promise<Notice> {
 		console.log('Query: getNotice', id);
 		return this.noticeService.getNotice(id);
