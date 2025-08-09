@@ -6,18 +6,14 @@ import { NoticeService } from './notice.service';
 import NoticeSchema from '../../schemas/Notice.model'; // Adjust path to your NoticeSchema
 import { MemberModule } from '../member/member.module';
 import { LikeModule } from '../like/like.module';
-import { NotificationModule } from '../notification/notification.module';
-import MemberSchema from '../../schemas/Member.model';
 
 @Module({
 	imports: [
-	  MongooseModule.forFeature([
-		{ name: 'Notice', schema: NoticeSchema },
-		{ name: 'Member', schema: MemberSchema },
-	  ]),
-	  NotificationModule, // <-- important
+		MongooseModule.forFeature([{ name: 'Notice', schema: NoticeSchema }]),
+		AuthModule,
+		forwardRef(() => MemberModule), // only if needed
 	],
-	providers: [NoticeService],
+	providers: [NoticeResolver, NoticeService],
 	exports: [NoticeService],
-  })
-  export class NoticeModule {}
+})
+export class NoticeModule {}
