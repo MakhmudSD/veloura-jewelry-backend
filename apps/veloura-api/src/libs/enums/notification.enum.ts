@@ -5,6 +5,9 @@ export enum NotificationType {
 	COMMENT = 'COMMENT',
 	FOLLOW = 'FOLLOW',
 	NEW_PRODUCT = 'NEW_PRODUCT',
+	ORDER = 'ORDER',           // ✅ add
+	NOTICE = 'NOTICE',         // ✅ add (admin site notice)
+	MESSAGE = 'MESSAGE',       // ✅ add (admin received a message)
 }
 registerEnumType(NotificationType, {
 	name: 'NotificationType',

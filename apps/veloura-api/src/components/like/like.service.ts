@@ -49,35 +49,35 @@ export class LikeService {
 					case LikeGroup.PRODUCT: {
 						const product = await this.productModel.findById(input.likeRefId).exec();
 						const productName = product?.productTitle || 'your product';
-						notificationTitle = `${memberNick} liked your product`;
-						notificationDesc = `${memberNick} liked your product '${productName}'`;
+						notificationTitle = `Your product got a like!`;
+						notificationDesc = `${memberNick} liked your product: '${productName}'.`;
 						break;
 					}
 					case LikeGroup.ARTICLE: {
 						const article = await this.articleModel.findById(input.likeRefId).exec();
 						const articleTitle = article?.articleTitle || 'your article';
-						notificationTitle = `${memberNick} liked your article`;
-						notificationDesc = `${memberNick} liked your article titled '${articleTitle}'`;
+						notificationTitle = `Your article was liked!`;
+						notificationDesc = `${memberNick} liked your article: '${articleTitle}'.`;
 						break;
 					}
 					case LikeGroup.COMMENT: {
 						const comment = await this.commentModel.findById(input.likeRefId).exec();
 						const commentContent = comment?.commentContent || 'your comment';
-						notificationTitle = `${memberNick} liked your comment`;
-						notificationDesc = `${memberNick} liked your comment titled '${commentContent}'`;
+						notificationTitle = `Someone liked your comment!`;
+						notificationDesc = `${memberNick} liked your comment: '${commentContent}'.`;
 						break;
 					}
 					case LikeGroup.MEMBER: {
-						notificationTitle = `${memberNick} liked your profile`;
-						notificationDesc = `${memberNick} liked your profile on ${new Date().toLocaleDateString()}`;
+						notificationTitle = `Your profile got a like!`;
+						notificationDesc = `${memberNick} liked your profile on ${new Date().toLocaleDateString()}.`;
 						break;
 					}
 					default: {
-						notificationTitle = `${memberNick} liked your content`;
-						notificationDesc = `${memberNick} liked your content on ${new Date().toLocaleDateString()}`;
+						notificationTitle = `Your content got a like!`;
+						notificationDesc = `${memberNick} liked your content on ${new Date().toLocaleDateString()}.`;
 					}
 				}
-
+				
 				const receiverId = await this.getOwnerIdForLike(input);
 				if (!receiverId) {
 					console.warn('No receiverId found for like notification, skipping notification creation');

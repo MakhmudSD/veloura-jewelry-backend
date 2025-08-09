@@ -1,6 +1,6 @@
-import { Field, ObjectType } from "@nestjs/graphql";
-import { NotificationType, NotificationGroup, NotificationStatus } from "../../enums/notification.enum";
-import { ObjectId } from "mongoose";
+import { Field, ObjectType } from '@nestjs/graphql';
+import { NotificationType, NotificationGroup, NotificationStatus } from '../../enums/notification.enum';
+import { ObjectId } from 'mongoose';
 
 @ObjectType()
 export class Notification {
@@ -19,7 +19,7 @@ export class Notification {
   @Field(() => String)
   notificationTitle: string;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   notificationDesc?: string;
 
   @Field(() => String)
@@ -33,6 +33,12 @@ export class Notification {
 
   @Field(() => String, { nullable: true })
   articleId?: ObjectId;
+
+  @Field(() => String, { nullable: true })
+  commentId?: ObjectId;
+
+  @Field(() => String, { nullable: true })
+  refId?: ObjectId;
 
   @Field(() => Date)
   createdAt: Date;
@@ -48,4 +54,14 @@ export class Notifications {
 
   @Field(() => Number)
   total: number;
+}
+
+
+@ObjectType()
+export class DeleteNotificationResult {
+  @Field(() => Boolean)
+  success: boolean;
+
+  @Field(() => String)
+  message: string;
 }

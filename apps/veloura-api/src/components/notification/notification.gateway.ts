@@ -1,60 +1,48 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { Server, WebSocket } from 'ws'; // native ws types
+import { Server } from 'ws';
+import { IncomingMessage } from 'http';
 
 @WebSocketGateway({
-	cors: {
-		origin: '*',
-	},
+  cors: { origin: '*' },
 })
 export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
-	@WebSocketServer()
-	server: Server;
+  @WebSocketServer()
+  server: Server;
 
-	private clients = new Map<string, WebSocket>();
+  private clients = new Map<string, any>(); // userId -> WebSocket
 
-	handleConnection(client: WebSocket) {
-		const userId = this.getUserIdFromClient(client);
-		if (userId) {
-			this.clients.set(userId, client);
-			console.log(`Client connected with userId: ${userId}`);
-		} else {
-			console.warn('Client connected but no userId found. Closing connection.');
-			client.close();
-		}
-	}
+  handleConnection(client: any, req: IncomingMessage) {
+    const userId = this.getUserIdFromReq(req);
+    if (userId) {
+      this.clients.set(userId, client);
+      // console.log(`WS connected: ${userId}`);
+    } else {
+      client.close();
+    }
+  }
 
-	handleDisconnect(client: WebSocket) {
-		const userId = this.getUserIdFromClient(client);
-		if (userId) {
-			this.clients.delete(userId);
-			console.log(`Client disconnected with userId: ${userId}`);
-		}
-	}
+  handleDisconnect(client: any) {
+    for (const [uid, ws] of this.clients.entries()) {
+      if (ws === client) {
+        this.clients.delete(uid);
+        break;
+      }
+    }
+  }
 
-	sendNotification(receiverId: string, payload: any) {
-		const client = this.clients.get(receiverId);
-		if (client && client.readyState === WebSocket.OPEN) {
-			client.send(JSON.stringify(payload));
-			console.log(`Notification sent to userId: ${receiverId}`);
-		} else {
-			console.log(`No open connection for userId: ${receiverId}`);
-		}
-	}
+  sendNotification(receiverId: string, payload: any) {
+    const ws = this.clients.get(receiverId);
+    if (ws && ws.readyState === ws.OPEN) {
+      ws.send(JSON.stringify(payload));
+    }
+  }
 
-	private getUserIdFromClient(client: WebSocket): string | null {
-		// The URL looks like: ws://myserver.com?userId=someId
-		// We parse userId from query string
-
-		// @ts-ignore
-		const req = client.upgradeReq || client._socket?.upgradeReq || null;
-		if (!req || !req.url) return null;
-
-		try {
-			const url = req.url;
-			const params = new URLSearchParams(url.split('?')[1]);
-			return params.get('userId');
-		} catch {
-			return null;
-		}
-	}
+  private getUserIdFromReq(req: IncomingMessage): string | null {
+    try {
+      const url = new URL(req.url ?? '', 'http://localhost'); // base required to parse
+      return url.searchParams.get('userId');
+    } catch {
+      return null;
+    }
+  }
 }

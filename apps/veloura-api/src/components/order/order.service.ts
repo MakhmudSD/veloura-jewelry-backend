@@ -10,6 +10,8 @@ import { Message } from '../../libs/enums/common.enum';
 import { OrderUpdateInput } from '../../libs/dto/orders/order.update.';
 import { OrderStatus } from '../../libs/enums/orders.enum';
 import { Product } from '../../libs/dto/product/product';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class OrderService {
@@ -18,6 +20,7 @@ export class OrderService {
 		@InjectModel('Product') private readonly productModel: Model<Product>, // Corrected the type from Model<Order> to Model<Product>
 		@InjectModel('OrderItem') private readonly orderItemModel: Model<OrderItem>,
 		private readonly memberService: MemberService,
+		private readonly notificationService: NotificationService,
 	) {}
 
 	async createOrder(memberId: ObjectId, input: OrderItemInput[]): Promise<Order> {
@@ -32,6 +35,28 @@ export class OrderService {
 			});
 
 			await this.recordOrderItems(shapeIntoMongoObjectId(newOrder._id), input);
+			await this.notificationService.notify({
+				receiverId: newOrder._id,
+				authorId: newOrder.memberId,  // or a system/admin id
+				type: NotificationType.ORDER,
+				group: NotificationGroup.PRODUCT,
+				title: 'Order placed',
+				desc: `Order #${newOrder._id}`,
+				refId: newOrder._id,
+				// Removed productId as it does not exist on the Order type
+			  });
+		  
+			  // 3) optionally notify seller
+			  await this.notificationService.notify({
+				receiverId: newOrder._id,
+				authorId: newOrder.memberId,
+				type: NotificationType.ORDER,
+				group: NotificationGroup.PRODUCT,
+				title: 'You received a new order',
+				desc: `Order #${newOrder._id}`,
+				refId: newOrder._id,
+				productId: newOrder._id,	
+			  });
 			return newOrder;
 		} catch (err) {
 			console.error('ERROR on createOrder:', err);

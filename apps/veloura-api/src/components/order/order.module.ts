@@ -7,6 +7,7 @@ import { MemberModule } from '../member/member.module';
 import OrderSchema from '../../schemas/Order.model';
 import OrderItemSchema from '../../schemas/OrderItem.model';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
 	imports: [
@@ -17,6 +18,7 @@ import { AuthModule } from '../auth/auth.module';
 		forwardRef(() => ProductModule), // Handle circular dependency
 		forwardRef(() => MemberModule), // Handle circular dependency
 		AuthModule,
+		NotificationModule
 	],
 	providers: [OrderResolver, OrderService],
 	exports: [OrderService], // Export OrderService for use in other modules

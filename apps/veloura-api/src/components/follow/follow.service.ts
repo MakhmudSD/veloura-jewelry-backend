@@ -7,12 +7,15 @@ import { Direction, Message } from '../../libs/enums/common.enum';
 import { FollowInquiry } from '../../libs/dto/follow/follow.input';
 import { T } from '../../libs/types/common';
 import { lookupAuthMemberFollowed, lookupAuthMemberLiked, lookupFollowerData, lookupFollowingData } from '../../libs/config';
+import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class FollowService {
  constructor(
   @InjectModel('Follow') private readonly followModel: Model<Follower | Following>,
   private memberService: MemberService,
+  private notificationService: NotificationService,
  ) {}
 
  public async subscribe(followerId: ObjectId, followingId: ObjectId): Promise<Follower> {
@@ -26,6 +29,14 @@ export class FollowService {
 
   await this.memberService.memberStatsEditor({ _id: followerId, targetKey: 'memberFollowings', modifier: 1 });
   await this.memberService.memberStatsEditor({ _id: followingId, targetKey: 'memberFollowers', modifier: 1 });
+  await this.notificationService.notify({
+    receiverId: targetMember._id,
+    authorId: followerId,
+    type: NotificationType.FOLLOW,
+    group: NotificationGroup.MEMBER,
+    title: 'New follower',
+    desc: '', // optional
+  });
   return result;
  }
 

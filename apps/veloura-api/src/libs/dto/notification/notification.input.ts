@@ -3,7 +3,7 @@ import { NotificationGroup, NotificationType } from '../../enums/notification.en
 import { ObjectId } from 'mongoose';
 
 @InputType()
-export class CreateNotificationInput { 
+export class CreateNotificationInput {
 	@Field(() => NotificationType)
 	notificationType: NotificationType;
 
@@ -35,14 +35,13 @@ export class CreateNotificationInput {
 	refId?: ObjectId;
 }
 
-
 @InputType()
 export class NotificationSearchInput {
 	@Field(() => NotificationType, { nullable: true })
 	notificationType?: NotificationType;
 
 	@Field(() => String, { nullable: true })
-	ownerId?: string;
+	ownerId?: string; // interpreted as receiverId filter in service
 }
 
 @InputType()
@@ -55,4 +54,11 @@ export class NotificationsInquiry {
 
 	@Field(() => NotificationSearchInput, { nullable: true })
 	search?: NotificationSearchInput;
+}
+
+
+@InputType()
+export class DeleteNotificationInput {
+  @Field(() => String)
+  id: string;
 }

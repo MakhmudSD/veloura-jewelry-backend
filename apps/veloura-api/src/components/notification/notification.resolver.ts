@@ -1,28 +1,30 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { NotificationService } from './notification.service';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { ObjectId } from 'mongoose';
-import { Notification, Notifications } from '../../libs/dto/notification/notification';
-import { CreateNotificationInput, NotificationsInquiry } from '../../libs/dto/notification/notification.input';
+
+import { NotificationService } from './notification.service';
+import { DeleteNotificationResult, Notification, Notifications } from '../../libs/dto/notification/notification';
+import { CreateNotificationInput, DeleteNotificationInput, NotificationsInquiry } from '../../libs/dto/notification/notification.input';
 
 @Resolver()
 export class NotificationResolver {
 	constructor(private readonly notificationService: NotificationService) {}
 
+	// Create from client (author is the authed member)
 	@UseGuards(AuthGuard)
 	@Mutation(() => Notification)
 	public async createNotification(
 		@Args('input') input: CreateNotificationInput,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Notification> {
-		const finalInput = {
+		const finalInput: CreateNotificationInput = {
 			...input,
-			ownerId: memberId,
+			authorId: memberId as any, // GraphQL String scalar; stored as ObjectId in Mongo
 		};
-
-		return await this.notificationService.createNotification(finalInput);
+		// Reuse service create (which also pushes WS)
+		return this.notificationService.createNotification(finalInput);
 	}
 
 	@UseGuards(AuthGuard)
@@ -37,7 +39,7 @@ export class NotificationResolver {
 	@UseGuards(AuthGuard)
 	@Mutation(() => Notification)
 	public async markNotificationRead(@Args('notificationId') notificationId: string) {
-		return await this.notificationService.markNotificationRead(notificationId);
+		return this.notificationService.markNotificationRead(notificationId);
 	}
 
 	@UseGuards(AuthGuard)
@@ -45,5 +47,13 @@ export class NotificationResolver {
 	public async markAllNotificationsRead(@AuthMember('_id') receiverId: ObjectId) {
 		await this.notificationService.markAllNotificationsRead(receiverId);
 		return true;
+	}
+
+	@UseGuards(AuthGuard)
+	@Mutation(() => DeleteNotificationResult)
+	async deleteNotificationById(
+	  @Args('id', { type: () => String }) id: string,
+	): Promise<DeleteNotificationResult> {
+	  return this.notificationService.deleteNotificationById({ id });
 	}
 }
