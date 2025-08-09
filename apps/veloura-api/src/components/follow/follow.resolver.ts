@@ -30,7 +30,7 @@ export class FollowResolver {
   @Args('input') input: String,
   @AuthMember('_id') memberId: ObjectId,
  ): Promise<Follower> {
-  console.log('Mutation: unSubscribe');
+  console.log('Mutation: unsubscribe');
   const followingId = shapeIntoMongoObjectId(input)
   return await this.followService.unsubscribe(memberId, followingId);
  }
@@ -59,4 +59,3 @@ export class FollowResolver {
   return await this.followService.getMemberFollowers(memberId, input);
  }
 }
-

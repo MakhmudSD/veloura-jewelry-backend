@@ -61,7 +61,7 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
 	};
    };
 
-interface LookupAuthMemberFollowed {
+   interface lookupAuthMemberFollowed {
 	followerId: T;
 	followingId: string;
 }

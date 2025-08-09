@@ -69,7 +69,7 @@ export class MemberResolver {
   console.log('Query: getMember');
   const targetId = shapeIntoMongoObjectId(input);
   // CORRECTED ORDER
-  return await this.memberService.getMember(targetId, memberId);
+  return await this.memberService.getMember(memberId, targetId);
  }
 
 	@UseGuards(WithoutGuard)

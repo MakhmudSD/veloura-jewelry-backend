@@ -13,20 +13,34 @@ import { lookupVisit } from '../../libs/config';
 export class ViewService {
 	constructor(@InjectModel('View') private readonly viewModel: Model<View>) {}
 
-	// recordView
 	public async recordView(input: ViewInput): Promise<View | null> {
-		const viewExist = await this.checkViewExistence(input);
-		if (!viewExist) {
+		const newViewData = {
+			...input,
+			memberId: new Types.ObjectId(input.memberId as any),
+			viewRefId: new Types.ObjectId(input.viewRefId as any),
+		};
+	
+		const result = await this.viewModel.updateOne(
+			{
+				memberId: newViewData.memberId,
+				viewRefId: newViewData.viewRefId,
+				viewGroup: newViewData.viewGroup,
+			},
+			{ $setOnInsert: newViewData },
+			{ upsert: true }
+		);
+	
+		if (result.upsertedCount > 0) {
 			console.log('- New View Insert -');
-			const newViewData = {
-				...input,
-				memberId: new Types.ObjectId(input.memberId as any),
-				viewRefId: new Types.ObjectId(input.viewRefId as any),
-			};
-			return await this.viewModel.create(newViewData);
+			return await this.viewModel.findOne({
+				memberId: newViewData.memberId,
+				viewRefId: newViewData.viewRefId,
+				viewGroup: newViewData.viewGroup,
+			});
 		}
 		return null;
 	}
+	
 
 	// checkViewExistence
 	public async checkViewExistence(input: ViewInput): Promise<View | null> {

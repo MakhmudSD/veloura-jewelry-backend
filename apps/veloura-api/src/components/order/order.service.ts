@@ -9,11 +9,13 @@ import { shapeIntoMongoObjectId } from '../../libs/config';
 import { Message } from '../../libs/enums/common.enum';
 import { OrderUpdateInput } from '../../libs/dto/orders/order.update.';
 import { OrderStatus } from '../../libs/enums/orders.enum';
+import { Product } from '../../libs/dto/product/product';
 
 @Injectable()
 export class OrderService {
 	constructor(
 		@InjectModel('Order') private readonly orderModel: Model<Order>,
+		@InjectModel('Product') private readonly productModel: Model<Product>, // Corrected the type from Model<Order> to Model<Product>
 		@InjectModel('OrderItem') private readonly orderItemModel: Model<OrderItem>,
 		private readonly memberService: MemberService,
 	) {}
@@ -37,15 +39,35 @@ export class OrderService {
 		}
 	}
 
-	private async recordOrderItems(orderId: ObjectId, input: OrderItemInput[]): Promise<void> {
-		const tasks = input.map(async (item) => {
-			item.orderId = orderId;
-			item.productId = shapeIntoMongoObjectId(item.productId);
-			await this.orderItemModel.create(item);
-		});
-
-		await Promise.all(tasks);
-	}
+	async recordOrderItems(orderId: ObjectId, items: OrderItemInput[]) {
+		const enrichedItems = await Promise.all(
+		  items.map(async (item) => {
+			const product = await this.productModel
+			  .findById(item.productId)
+			  .populate('memberId', 'memberNick') // ✅ get seller nick
+			  .lean();
+	  
+			return {
+			  orderId,
+			  productId: item.productId,
+			  itemQuantity: item.itemQuantity,
+			  itemPrice: item.itemPrice,
+			  productData: {
+				_id: product?._id,
+				productTitle: product?.productTitle,
+				productPrice: product?.productPrice,
+				productImages: Array.isArray(product?.productImages) ? product.productImages : [],
+				memberId: (product?.memberId as any)?._id || product?.memberId || null,
+				memberNick: (product as any)?.memberId?.memberNick || '',
+			  },
+			};
+		  })
+		);
+	  
+		await this.orderItemModel.insertMany(enrichedItems);
+	  }
+	  
+	  
 
 	async getMyOrders(memberId: ObjectId, inquiry: OrderInquiry): Promise<Order[]> {
 		if (!memberId) {
