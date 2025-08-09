@@ -5,9 +5,9 @@ export enum NotificationType {
 	COMMENT = 'COMMENT',
 	FOLLOW = 'FOLLOW',
 	NEW_PRODUCT = 'NEW_PRODUCT',
-	ORDER = 'ORDER',           // ✅ add
-	NOTICE = 'NOTICE',         // ✅ add (admin site notice)
-	MESSAGE = 'MESSAGE',       // ✅ add (admin received a message)
+	ORDER = 'ORDER',           
+	NOTICE = 'NOTICE',
+	MESSAGE = 'MESSAGE',       
 }
 registerEnumType(NotificationType, {
 	name: 'NotificationType',
@@ -26,6 +26,7 @@ export enum NotificationGroup {
 	ARTICLE = 'ARTICLE',
 	PRODUCT = 'PRODUCT',
 	COMMENT = 'COMMENT',
+	NOTICE = 'NOTICE'
 }
 registerEnumType(NotificationGroup, {
 	name: 'NotificationGroup',
