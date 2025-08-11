@@ -13,7 +13,7 @@ import {
 export class ProductUpdate {
 	@IsNotEmpty()
 	@Field(() => String)
-	_id: ObjectId;
+	_id: string;
 
 	@IsOptional()
 	@Field(() => ProductCategory, { nullable: true })

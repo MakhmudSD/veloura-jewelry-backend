@@ -33,7 +33,7 @@ export class ProductInput {
 
 	@IsNotEmpty()
 	@Length(3, 100)
-	@Field(() => String)
+	@Field(() => ProductMaterial)
 	productMaterial: ProductMaterial;
 
 	@IsNotEmpty()
