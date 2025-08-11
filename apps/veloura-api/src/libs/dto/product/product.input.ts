@@ -141,6 +141,10 @@ class PISearch {
 	productTitle?: string;
 
 	@IsOptional()
+	@Field(() => ProductStatus, { nullable: true })
+	productStatus?: ProductStatus;
+
+	@IsOptional()
 	@Field(() => Number, { nullable: true })
 	weightList?: number;
 
