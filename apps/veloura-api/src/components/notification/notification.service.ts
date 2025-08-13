@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId, Types } from 'mongoose';
+import { Model, ObjectId, Types, isValidObjectId } from 'mongoose';
 
 import {
   CreateNotificationInput,
-  DeleteNotificationInput,
   NotificationsInquiry,
 } from '../../libs/dto/notification/notification.input';
 import {
@@ -64,6 +63,7 @@ export class NotificationService {
   public async notifyMany(
     items: Array<{
       receiverId: string | ObjectId;
+      authorId: string | ObjectId; // <-- added
       type: NotificationType;
       group: NotificationGroup;
       title: string;
@@ -76,23 +76,36 @@ export class NotificationService {
   ): Promise<Notification[]> {
     if (!items?.length) return [];
 
-    // (Optional) quick validation: ensure all receivers/authors exist
-    // Skipped for speed; rely on DB integrity if desired.
+    // Validate all quickly (shape + self-check)
+    for (const i of items) {
+      if (!i.receiverId || !i.authorId) {
+        throw new BadRequestException('receiverId and authorId are required for notifyMany');
+      }
+      const r = String(i.receiverId);
+      const a = String(i.authorId);
+      if (!isValidObjectId(r) || !isValidObjectId(a)) {
+        throw new BadRequestException('Invalid receiverId/authorId');
+      }
+      if (r === a) {
+        throw new BadRequestException('receiverId and authorId cannot be the same');
+      }
+    }
 
     const docs = items.map((i) => ({
       notificationType: i.type,
       notificationGroup: i.group,
       notificationTitle: i.title,
       notificationDesc: i.desc,
-      receiverId: i.receiverId as any,
-      productId: i.productId as any,
-      articleId: i.articleId as any,
-      commentId: i.commentId as any,
-      refId: i.refId as any,
+      receiverId: new Types.ObjectId(i.receiverId as any),
+      authorId: new Types.ObjectId(i.authorId as any),
+      productId: i.productId ? new Types.ObjectId(i.productId as any) : undefined,
+      articleId: i.articleId ? new Types.ObjectId(i.articleId as any) : undefined,
+      commentId: i.commentId ? new Types.ObjectId(i.commentId as any) : undefined,
+      refId: i.refId ? new Types.ObjectId(i.refId as any) : undefined,
       notificationStatus: NotificationStatus.WAIT,
     }));
 
-    const created = await this.notificationModel.insertMany(docs);
+    const created = await this.notificationModel.insertMany(docs, { ordered: false });
 
     // Best-effort WS push
     for (const c of created) {
@@ -114,27 +127,60 @@ export class NotificationService {
 
   /**
    * createNotification (validates & pushes via WS)
+   * NOTE: This is usually called internally via `notify`. If you expose a GraphQL mutation that calls this,
+   * the *GraphQL* layer must supply receiverId + authorId, otherwise the client will hit validation errors.
    */
   public async createNotification(input: CreateNotificationInput): Promise<Notification> {
-    // Validate receiver
-    if (input.receiverId) {
-      const receiver = await this.memberModel.findById(input.receiverId).lean();
-      if (!receiver) throw new BadRequestException('Receiver does not exist.');
-    }
-    // Validate author
-    if (input.authorId) {
-      const author = await this.memberModel.findById(input.authorId).lean();
-      if (!author) throw new BadRequestException('Author does not exist.');
+    // Required fields guard (in case GraphQL is not enforcing)
+    if (!input.receiverId) throw new BadRequestException('receiverId is required');
+    if (!input.authorId) throw new BadRequestException('authorId is required');
+
+    const receiverId = String(input.receiverId);
+    const authorId = String(input.authorId);
+
+    if (!isValidObjectId(receiverId)) throw new BadRequestException('Invalid receiverId');
+    if (!isValidObjectId(authorId)) throw new BadRequestException('Invalid authorId');
+    if (receiverId === authorId) throw new BadRequestException('receiverId cannot equal authorId');
+
+    // Validate existence
+    const [receiver, author] = await Promise.all([
+      this.memberModel.findById(receiverId).lean(),
+      this.memberModel.findById(authorId).lean(),
+    ]);
+    if (!receiver) throw new BadRequestException('Receiver does not exist.');
+    if (!author) throw new BadRequestException('Author does not exist.');
+
+    // Optional: de-dup FOLLOW spam (same author -> receiver within recent window)
+    if (input.notificationType === NotificationType.FOLLOW) {
+      const dup = await this.notificationModel.exists({
+        receiverId: new Types.ObjectId(receiverId),
+        authorId: new Types.ObjectId(authorId),
+        notificationType: NotificationType.FOLLOW,
+        createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 10) }, // last 10 minutes
+      });
+      if (dup) {
+        // Silently skip or return existing
+        const existing = await this.notificationModel
+          .findOne({
+            receiverId: new Types.ObjectId(receiverId),
+            authorId: new Types.ObjectId(authorId),
+            notificationType: NotificationType.FOLLOW,
+          })
+          .sort({ createdAt: -1 });
+        return existing as any;
+      }
     }
 
     const result = await this.notificationModel.create({
       ...input,
+      receiverId: new Types.ObjectId(receiverId),
+      authorId: new Types.ObjectId(authorId),
       notificationStatus: NotificationStatus.WAIT,
     });
 
     // Fire WS push (non-blocking)
     try {
-      this.gateway.sendNotification(String(input.receiverId), {
+      this.gateway.sendNotification(receiverId, {
         kind: 'notification:new',
         _id: String((result as any)._id),
         title: result.notificationTitle,
@@ -157,13 +203,12 @@ export class NotificationService {
   public async getNotifications(memberId: ObjectId, input: NotificationsInquiry): Promise<Notifications> {
     const { page, limit, search } = input;
 
-    const match: any = { receiverId: memberId };
+    const match: any = { receiverId: new Types.ObjectId(memberId as any) };
 
     if (search?.notificationType) {
       match.notificationType = search.notificationType;
     }
-    // Your DTO has `ownerId` in search. Interpret it as receiverId filter if present.
-    if (search?.ownerId) {
+    if (search?.ownerId && isValidObjectId(search.ownerId)) {
       match.receiverId = new Types.ObjectId(search.ownerId);
     }
 
@@ -171,7 +216,6 @@ export class NotificationService {
       .aggregate([
         { $match: match },
         { $sort: { createdAt: -1 } },
-        // ---- attach author mini profile as memberData ----
         {
           $lookup: {
             from: 'members',
@@ -198,6 +242,9 @@ export class NotificationService {
   }
 
   public async markNotificationRead(notificationId: string): Promise<Notification> {
+    if (!isValidObjectId(notificationId)) {
+      throw new BadRequestException('Invalid notification id');
+    }
     const result = await this.notificationModel.findByIdAndUpdate(
       notificationId,
       { notificationStatus: NotificationStatus.READ },
@@ -208,24 +255,25 @@ export class NotificationService {
   }
 
   public async markAllNotificationsRead(receiverId: string | ObjectId): Promise<void> {
+    if (!isValidObjectId(String(receiverId))) {
+      throw new BadRequestException('Invalid receiverId');
+    }
     await this.notificationModel.updateMany(
-      { receiverId, notificationStatus: NotificationStatus.WAIT },
+      { receiverId: new Types.ObjectId(receiverId as any), notificationStatus: NotificationStatus.WAIT },
       { notificationStatus: NotificationStatus.READ },
     );
   }
 
-  public async deleteNotificationById(
-	input: { id: string }
-  ): Promise<DeleteNotificationResult> {
-	if (!Types.ObjectId.isValid(input.id)) {
-	  return { success: false, message: 'Invalid notification id' };
-	}
-  
-	const deleted = await this.notificationModel.findByIdAndDelete(input.id);
-	if (!deleted) {
-	  return { success: false, message: 'Notification not found' };
-	}
-  
-	return { success: true, message: 'Notification deleted successfully' };
+  public async deleteNotificationById(input: { id: string }): Promise<DeleteNotificationResult> {
+    if (!isValidObjectId(input.id)) {
+      return { success: false, message: 'Invalid notification id' };
+    }
+
+    const deleted = await this.notificationModel.findByIdAndDelete(input.id);
+    if (!deleted) {
+      return { success: false, message: 'Notification not found' };
+    }
+
+    return { success: true, message: 'Notification deleted successfully' };
   }
 }

@@ -84,4 +84,11 @@ NotificationSchema.virtual('receiverData', {
 NotificationSchema.set('toObject', { virtuals: true });
 NotificationSchema.set('toJSON', { virtuals: true });
 
+NotificationSchema.index(
+  { receiverId: 1, authorId: 1, notificationType: 1, createdAt: -1 },
+  { name: 'notif_dedupe_hint' }
+);
+NotificationSchema.index({ receiverId: 1, createdAt: -1 });
+
+
 export default NotificationSchema;
