@@ -21,16 +21,13 @@ export class NoticeService {
 
   // getNotices
   public async getNotices(input: NoticeInquiry): Promise<Notices> {
-	const { noticeCategory, text, memberId, noticeStatus } = input.search;
+	const {  text, memberId, noticeStatus } = input.search;
 	const match: Record<string, any> = {};
   
 	if (noticeStatus) {
 	  match.noticeStatus = noticeStatus;
 	}
   
-	if (noticeCategory) {
-	  match.noticeCategory = noticeCategory;
-	}
   
 	if (text) {
 	  match.$or = [
