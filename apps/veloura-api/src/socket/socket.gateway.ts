@@ -1,7 +1,6 @@
 import {
 	WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket,
   } from '@nestjs/websockets';
-import { Socket } from 'dgram';
   import { WebSocket } from 'ws';
   
   @WebSocketGateway({
@@ -13,6 +12,7 @@ import { Socket } from 'dgram';
 	async handleConnection(client: WebSocket, req: any) {
 	  this.clients.add(client);
 	  client.send(JSON.stringify({ event: 'info', action: 'connected', total: this.clients.size }));
+
 	}
   
 	handleDisconnect(client: WebSocket) {
