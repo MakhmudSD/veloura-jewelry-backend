@@ -1,5 +1,3 @@
-version: '3.3'
-
 services:
   veloura-api:
     container_name: veloura-api
