@@ -38,8 +38,6 @@ export class ProductService {
 	public async createProduct(input: ProductInput): Promise<Product> {
 		try {
 			const result: any = await this.productModel.create(input);
-			// Removed the undefined 'orderItem' assignment
-			console.log('✅ Product created:', result._id);
 
 			await this.memberService.memberStatsEditor({ _id: result.memberId, targetKey: 'memberProducts', modifier: 1 });
 			return result;
@@ -128,17 +126,13 @@ export class ProductService {
 	// getProducts
 	public async getProducts(memberId: ObjectId, input: ProductsInquiry): Promise<Products> {
 		const match: T = { productStatus: ProductStatus.AVAILABLE };
-		  // Add case-insensitive brand filtering here:
-		  if (input.search.brand) {
+		if (input.search.brand) {
 			match.$or = [
-			  { productTitle: { $regex: input.search.brand, $options: 'i' } },
-			  { productBrand: { $regex: input.search.brand, $options: 'i' } },
+				{ productTitle: { $regex: input.search.brand, $options: 'i' } },
+				{ productBrand: { $regex: input.search.brand, $options: 'i' } },
 			];
-		  }
+		}
 
-		//   if (input.search?.categoryList?.length) {
-		// 	match.productCategory = { $in: input.search.categoryList };
-		//   }
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
 		this.shapeMatchQuery(match, input);
@@ -196,7 +190,6 @@ export class ProductService {
 						list: [
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
-							// meLiked
 							lookupMember,
 							{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
 						],
@@ -217,13 +210,13 @@ export class ProductService {
 		const { productStatus, productLocation } = input.search;
 		const match: T = {};
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
-	
+
 		if (productStatus) match.productStatus = productStatus;
-	
+
 		if (productLocation?.length) {
-			match.productLocation = { $in: productLocation }; // ✅ FIXED
+			match.productLocation = { $in: productLocation };
 		}
-	
+
 		const result = await this.productModel
 			.aggregate([
 				{ $match: match },
@@ -242,12 +235,11 @@ export class ProductService {
 				},
 			])
 			.exec();
-	
+
 		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-	
+
 		return result[0];
 	}
-	
 
 	public async updateProductByAdmin(input: ProductUpdate): Promise<Product> {
 		let { productStatus, soldAt, deletedAt } = input;
@@ -357,7 +349,7 @@ export class ProductService {
 		}
 		const ors = options?.map((key) => ({ [key]: true })) || [];
 		if (ors.length > 0) {
-		  match['$or'] = ors;
+			match['$or'] = ors;
 		}
 	}
 

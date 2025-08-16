@@ -2,278 +2,246 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Types, isValidObjectId } from 'mongoose';
 
-import {
-  CreateNotificationInput,
-  NotificationsInquiry,
-} from '../../libs/dto/notification/notification.input';
-import {
-  NotificationStatus,
-  NotificationType,
-  NotificationGroup,
-} from '../../libs/enums/notification.enum';
-import {
-  DeleteNotificationResult,
-  Notification,
-  Notifications,
-} from '../../libs/dto/notification/notification';
+import { CreateNotificationInput, NotificationsInquiry } from '../../libs/dto/notification/notification.input';
+import { NotificationStatus, NotificationType, NotificationGroup } from '../../libs/enums/notification.enum';
+import { DeleteNotificationResult, Notification, Notifications } from '../../libs/dto/notification/notification';
 import { Member } from '../../libs/dto/member/member';
 import { NotificationGateway } from './notification.gateway';
 
 @Injectable()
 export class NotificationService {
-  constructor(
-    @InjectModel('Notification') private readonly notificationModel: Model<Notification>,
-    @InjectModel('Member') private readonly memberModel: Model<Member>,
-    private readonly gateway: NotificationGateway,
-  ) {}
+	constructor(
+		@InjectModel('Notification') private readonly notificationModel: Model<Notification>,
+		@InjectModel('Member') private readonly memberModel: Model<Member>,
+		private readonly gateway: NotificationGateway,
+	) {}
 
-  /**
-   * One-liner helper to create & push a notification from any feature.
-   */
-  public async notify(params: {
-    receiverId: string | ObjectId;
-    authorId: string | ObjectId;
-    type: NotificationType;
-    group: NotificationGroup;
-    title: string;
-    desc?: string;
-    productId?: string | ObjectId;
-    articleId?: string | ObjectId;
-    commentId?: string | ObjectId;
-    refId?: string | ObjectId;
-  }): Promise<Notification> {
-    const input: CreateNotificationInput = {
-      notificationType: params.type,
-      notificationGroup: params.group,
-      notificationTitle: params.title,
-      notificationDesc: params.desc,
-      receiverId: params.receiverId as any,
-      authorId: params.authorId as any,
-      productId: params.productId as any,
-      articleId: params.articleId as any,
-      commentId: params.commentId as any,
-      refId: params.refId as any,
-    };
-    return this.createNotification(input);
-  }
+	public async notify(params: {
+		receiverId: string | ObjectId;
+		authorId: string | ObjectId;
+		type: NotificationType;
+		group: NotificationGroup;
+		title: string;
+		desc?: string;
+		productId?: string | ObjectId;
+		articleId?: string | ObjectId;
+		commentId?: string | ObjectId;
+		refId?: string | ObjectId;
+	}): Promise<Notification> {
+		const input: CreateNotificationInput = {
+			notificationType: params.type,
+			notificationGroup: params.group,
+			notificationTitle: params.title,
+			notificationDesc: params.desc,
+			receiverId: params.receiverId as any,
+			authorId: params.authorId as any,
+			productId: params.productId as any,
+			articleId: params.articleId as any,
+			commentId: params.commentId as any,
+			refId: params.refId as any,
+		};
+		return this.createNotification(input);
+	}
 
-  /**
-   * Bulk helper (broadcast to many receivers).
-   */
-  public async notifyMany(
-    items: Array<{
-      receiverId: string | ObjectId;
-      authorId: string | ObjectId; // <-- added
-      type: NotificationType;
-      group: NotificationGroup;
-      title: string;
-      desc?: string;
-      productId?: string | ObjectId;
-      articleId?: string | ObjectId;
-      commentId?: string | ObjectId;
-      refId?: string | ObjectId;
-    }>,
-  ): Promise<Notification[]> {
-    if (!items?.length) return [];
 
-    // Validate all quickly (shape + self-check)
-    for (const i of items) {
-      if (!i.receiverId || !i.authorId) {
-        throw new BadRequestException('receiverId and authorId are required for notifyMany');
-      }
-      const r = String(i.receiverId);
-      const a = String(i.authorId);
-      if (!isValidObjectId(r) || !isValidObjectId(a)) {
-        throw new BadRequestException('Invalid receiverId/authorId');
-      }
-      if (r === a) {
-        throw new BadRequestException('receiverId and authorId cannot be the same');
-      }
-    }
+	public async notifyMany(
+		items: Array<{
+			receiverId: string | ObjectId;
+			authorId: string | ObjectId;
+			type: NotificationType;
+			group: NotificationGroup;
+			title: string;
+			desc?: string;
+			productId?: string | ObjectId;
+			articleId?: string | ObjectId;
+			commentId?: string | ObjectId;
+			refId?: string | ObjectId;
+		}>,
+	): Promise<Notification[]> {
+		if (!items?.length) return [];
 
-    const docs = items.map((i) => ({
-      notificationType: i.type,
-      notificationGroup: i.group,
-      notificationTitle: i.title,
-      notificationDesc: i.desc,
-      receiverId: new Types.ObjectId(i.receiverId as any),
-      authorId: new Types.ObjectId(i.authorId as any),
-      productId: i.productId ? new Types.ObjectId(i.productId as any) : undefined,
-      articleId: i.articleId ? new Types.ObjectId(i.articleId as any) : undefined,
-      commentId: i.commentId ? new Types.ObjectId(i.commentId as any) : undefined,
-      refId: i.refId ? new Types.ObjectId(i.refId as any) : undefined,
-      notificationStatus: NotificationStatus.WAIT,
-    }));
+		for (const i of items) {
+			if (!i.receiverId || !i.authorId) {
+				throw new BadRequestException('receiverId and authorId are required for notifyMany');
+			}
+			const r = String(i.receiverId);
+			const a = String(i.authorId);
+			if (!isValidObjectId(r) || !isValidObjectId(a)) {
+				throw new BadRequestException('Invalid receiverId/authorId');
+			}
+			if (r === a) {
+				throw new BadRequestException('receiverId and authorId cannot be the same');
+			}
+		}
 
-    const created = await this.notificationModel.insertMany(docs, { ordered: false });
+		const docs = items.map((i) => ({
+			notificationType: i.type,
+			notificationGroup: i.group,
+			notificationTitle: i.title,
+			notificationDesc: i.desc,
+			receiverId: new Types.ObjectId(i.receiverId as any),
+			authorId: new Types.ObjectId(i.authorId as any),
+			productId: i.productId ? new Types.ObjectId(i.productId as any) : undefined,
+			articleId: i.articleId ? new Types.ObjectId(i.articleId as any) : undefined,
+			commentId: i.commentId ? new Types.ObjectId(i.commentId as any) : undefined,
+			refId: i.refId ? new Types.ObjectId(i.refId as any) : undefined,
+			notificationStatus: NotificationStatus.WAIT,
+		}));
 
-    // Best-effort WS push
-    for (const c of created) {
-      try {
-        this.gateway.sendNotification(String((c as any).receiverId), {
-          kind: 'notification:new',
-          _id: String((c as any)._id),
-          title: c.notificationTitle,
-          desc: c.notificationDesc,
-          type: c.notificationType,
-          group: c.notificationGroup,
-          createdAt: (c as any).createdAt,
-        });
-      } catch {}
-    }
+		const created = await this.notificationModel.insertMany(docs, { ordered: false });
 
-    return created as any;
-  }
+		for (const c of created) {
+			try {
+				this.gateway.sendNotification(String((c as any).receiverId), {
+					kind: 'notification:new',
+					_id: String((c as any)._id),
+					title: c.notificationTitle,
+					desc: c.notificationDesc,
+					type: c.notificationType,
+					group: c.notificationGroup,
+					createdAt: (c as any).createdAt,
+				});
+			} catch {}
+		}
 
-  /**
-   * createNotification (validates & pushes via WS)
-   * NOTE: This is usually called internally via `notify`. If you expose a GraphQL mutation that calls this,
-   * the *GraphQL* layer must supply receiverId + authorId, otherwise the client will hit validation errors.
-   */
-  public async createNotification(input: CreateNotificationInput): Promise<Notification> {
-    // Required fields guard (in case GraphQL is not enforcing)
-    if (!input.receiverId) throw new BadRequestException('receiverId is required');
-    if (!input.authorId) throw new BadRequestException('authorId is required');
+		return created as any;
+	}
 
-    const receiverId = String(input.receiverId);
-    const authorId = String(input.authorId);
+	public async createNotification(input: CreateNotificationInput): Promise<Notification> {
+		if (!input.receiverId) throw new BadRequestException('receiverId is required');
+		if (!input.authorId) throw new BadRequestException('authorId is required');
 
-    if (!isValidObjectId(receiverId)) throw new BadRequestException('Invalid receiverId');
-    if (!isValidObjectId(authorId)) throw new BadRequestException('Invalid authorId');
-    if (receiverId === authorId) throw new BadRequestException('receiverId cannot equal authorId');
+		const receiverId = String(input.receiverId);
+		const authorId = String(input.authorId);
 
-    // Validate existence
-    const [receiver, author] = await Promise.all([
-      this.memberModel.findById(receiverId).lean(),
-      this.memberModel.findById(authorId).lean(),
-    ]);
-    if (!receiver) throw new BadRequestException('Receiver does not exist.');
-    if (!author) throw new BadRequestException('Author does not exist.');
+		if (!isValidObjectId(receiverId)) throw new BadRequestException('Invalid receiverId');
+		if (!isValidObjectId(authorId)) throw new BadRequestException('Invalid authorId');
+		if (receiverId === authorId) throw new BadRequestException('receiverId cannot equal authorId');
 
-    // Optional: de-dup FOLLOW spam (same author -> receiver within recent window)
-    if (input.notificationType === NotificationType.FOLLOW) {
-      const dup = await this.notificationModel.exists({
-        receiverId: new Types.ObjectId(receiverId),
-        authorId: new Types.ObjectId(authorId),
-        notificationType: NotificationType.FOLLOW,
-        createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 10) }, // last 10 minutes
-      });
-      if (dup) {
-        // Silently skip or return existing
-        const existing = await this.notificationModel
-          .findOne({
-            receiverId: new Types.ObjectId(receiverId),
-            authorId: new Types.ObjectId(authorId),
-            notificationType: NotificationType.FOLLOW,
-          })
-          .sort({ createdAt: -1 });
-        return existing as any;
-      }
-    }
+		const [receiver, author] = await Promise.all([
+			this.memberModel.findById(receiverId).lean(),
+			this.memberModel.findById(authorId).lean(),
+		]);
+		if (!receiver) throw new BadRequestException('Receiver does not exist.');
+		if (!author) throw new BadRequestException('Author does not exist.');
 
-    const result = await this.notificationModel.create({
-      ...input,
-      receiverId: new Types.ObjectId(receiverId),
-      authorId: new Types.ObjectId(authorId),
-      notificationStatus: NotificationStatus.WAIT,
-    });
+		if (input.notificationType === NotificationType.FOLLOW) {
+			const dup = await this.notificationModel.exists({
+				receiverId: new Types.ObjectId(receiverId),
+				authorId: new Types.ObjectId(authorId),
+				notificationType: NotificationType.FOLLOW,
+				createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 10) },
+			});
+			if (dup) {
+				const existing = await this.notificationModel
+					.findOne({
+						receiverId: new Types.ObjectId(receiverId),
+						authorId: new Types.ObjectId(authorId),
+						notificationType: NotificationType.FOLLOW,
+					})
+					.sort({ createdAt: -1 });
+				return existing as any;
+			}
+		}
 
-    // Fire WS push (non-blocking)
-    try {
-      this.gateway.sendNotification(receiverId, {
-        kind: 'notification:new',
-        _id: String((result as any)._id),
-        title: result.notificationTitle,
-        desc: result.notificationDesc,
-        type: result.notificationType,
-        group: result.notificationGroup,
-        createdAt: (result as any).createdAt,
-      });
-    } catch {
-      // ignore WS errors
-    }
+		const result = await this.notificationModel.create({
+			...input,
+			receiverId: new Types.ObjectId(receiverId),
+			authorId: new Types.ObjectId(authorId),
+			notificationStatus: NotificationStatus.WAIT,
+		});
 
-    return result;
-  }
+		try {
+			this.gateway.sendNotification(receiverId, {
+				kind: 'notification:new',
+				_id: String((result as any)._id),
+				title: result.notificationTitle,
+				desc: result.notificationDesc,
+				type: result.notificationType,
+				group: result.notificationGroup,
+				createdAt: (result as any).createdAt,
+			});
+		} catch {
+			// ignore WS errors
+		}
 
-  /**
-   * getNotifications
-   * Includes a minimal author mini-profile as `memberData` via $lookup.
-   */
-  public async getNotifications(memberId: ObjectId, input: NotificationsInquiry): Promise<Notifications> {
-    const { page, limit, search } = input;
+		return result;
+	}
 
-    const match: any = { receiverId: new Types.ObjectId(memberId as any) };
+	public async getNotifications(memberId: ObjectId, input: NotificationsInquiry): Promise<Notifications> {
+		const { page, limit, search } = input;
 
-    if (search?.notificationType) {
-      match.notificationType = search.notificationType;
-    }
-    if (search?.ownerId && isValidObjectId(search.ownerId)) {
-      match.receiverId = new Types.ObjectId(search.ownerId);
-    }
+		const match: any = { receiverId: new Types.ObjectId(memberId as any) };
 
-    const [agg] = await this.notificationModel
-      .aggregate([
-        { $match: match },
-        { $sort: { createdAt: -1 } },
-        {
-          $lookup: {
-            from: 'members',
-            localField: 'authorId',
-            foreignField: '_id',
-            as: 'memberData',
-            pipeline: [{ $project: { _id: 1, memberNick: 1, memberImage: 1 } }],
-          },
-        },
-        { $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
-        {
-          $facet: {
-            list: [{ $skip: (page - 1) * limit }, { $limit: limit }],
-            metaCounter: [{ $count: 'total' }],
-          },
-        },
-      ])
-      .exec();
+		if (search?.notificationType) {
+			match.notificationType = search.notificationType;
+		}
+		if (search?.ownerId && isValidObjectId(search.ownerId)) {
+			match.receiverId = new Types.ObjectId(search.ownerId);
+		}
 
-    const list = agg?.list ?? [];
-    const total = agg?.metaCounter?.[0]?.total ?? 0;
+		const [agg] = await this.notificationModel
+			.aggregate([
+				{ $match: match },
+				{ $sort: { createdAt: -1 } },
+				{
+					$lookup: {
+						from: 'members',
+						localField: 'authorId',
+						foreignField: '_id',
+						as: 'memberData',
+						pipeline: [{ $project: { _id: 1, memberNick: 1, memberImage: 1 } }],
+					},
+				},
+				{ $unwind: { path: '$memberData', preserveNullAndEmptyArrays: true } },
+				{
+					$facet: {
+						list: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
 
-    return { list, total } as any;
-  }
+		const list = agg?.list ?? [];
+		const total = agg?.metaCounter?.[0]?.total ?? 0;
 
-  public async markNotificationRead(notificationId: string): Promise<Notification> {
-    if (!isValidObjectId(notificationId)) {
-      throw new BadRequestException('Invalid notification id');
-    }
-    const result = await this.notificationModel.findByIdAndUpdate(
-      notificationId,
-      { notificationStatus: NotificationStatus.READ },
-      { new: true },
-    );
-    if (!result) throw new NotFoundException(`Notification with id ${notificationId} not found`);
-    return result;
-  }
+		return { list, total } as any;
+	}
 
-  public async markAllNotificationsRead(receiverId: string | ObjectId): Promise<void> {
-    if (!isValidObjectId(String(receiverId))) {
-      throw new BadRequestException('Invalid receiverId');
-    }
-    await this.notificationModel.updateMany(
-      { receiverId: new Types.ObjectId(receiverId as any), notificationStatus: NotificationStatus.WAIT },
-      { notificationStatus: NotificationStatus.READ },
-    );
-  }
+	public async markNotificationRead(notificationId: string): Promise<Notification> {
+		if (!isValidObjectId(notificationId)) {
+			throw new BadRequestException('Invalid notification id');
+		}
+		const result = await this.notificationModel.findByIdAndUpdate(
+			notificationId,
+			{ notificationStatus: NotificationStatus.READ },
+			{ new: true },
+		);
+		if (!result) throw new NotFoundException(`Notification with id ${notificationId} not found`);
+		return result;
+	}
 
-  public async deleteNotificationById(input: { id: string }): Promise<DeleteNotificationResult> {
-    if (!isValidObjectId(input.id)) {
-      return { success: false, message: 'Invalid notification id' };
-    }
+	public async markAllNotificationsRead(receiverId: string | ObjectId): Promise<void> {
+		if (!isValidObjectId(String(receiverId))) {
+			throw new BadRequestException('Invalid receiverId');
+		}
+		await this.notificationModel.updateMany(
+			{ receiverId: new Types.ObjectId(receiverId as any), notificationStatus: NotificationStatus.WAIT },
+			{ notificationStatus: NotificationStatus.READ },
+		);
+	}
 
-    const deleted = await this.notificationModel.findByIdAndDelete(input.id);
-    if (!deleted) {
-      return { success: false, message: 'Notification not found' };
-    }
+	public async deleteNotificationById(input: { id: string }): Promise<DeleteNotificationResult> {
+		if (!isValidObjectId(input.id)) {
+			return { success: false, message: 'Invalid notification id' };
+		}
 
-    return { success: true, message: 'Notification deleted successfully' };
-  }
+		const deleted = await this.notificationModel.findByIdAndDelete(input.id);
+		if (!deleted) {
+			return { success: false, message: 'Notification not found' };
+		}
+
+		return { success: true, message: 'Notification deleted successfully' };
+	}
 }

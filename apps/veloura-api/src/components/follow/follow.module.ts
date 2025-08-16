@@ -19,7 +19,7 @@ import { NotificationGateway } from '../notification/notification.gateway';
 		AuthModule,
 		MemberModule,
 		NotificationModule,
-		NotificationGateway
+		NotificationGateway,
 	],
 	providers: [FollowResolver, FollowService],
 	exports: [FollowService],

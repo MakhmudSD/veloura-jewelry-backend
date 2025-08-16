@@ -27,7 +27,6 @@ export class OrderResolver {
 		return result;
 	}
 
-	// Instead of manually accessing context.req.user
 	@Query(() => [Order])
 	@Roles(MemberType.USER)
 	@UseGuards(RolesGuard)

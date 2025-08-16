@@ -124,7 +124,7 @@ export class NoticeService {
   public async removeNoticePermanently(id: string): Promise<Notice> {
     const deleted = await this.noticeModel.findOneAndDelete({
       _id: id,
-      noticeStatus: NoticeStatus.DELETED, // ✅ Only allow hard-delete if already soft-deleted
+      noticeStatus: NoticeStatus.DELETED,
     });
   
     if (!deleted) {

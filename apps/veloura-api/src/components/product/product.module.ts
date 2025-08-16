@@ -8,7 +8,7 @@ import { ViewModule } from '../view/view.module';
 import { LikeModule } from '../like/like.module';
 import { MemberModule } from '../member/member.module';
 import { NotificationModule } from '../notification/notification.module';
-// product.module.ts
+
 @Module({
 	imports: [
 		MongooseModule.forFeature([{ name: 'Product', schema: ProductSchema }]),
@@ -19,6 +19,6 @@ import { NotificationModule } from '../notification/notification.module';
 		NotificationModule,
 	],
 	providers: [ProductResolver, ProductService],
-	exports: [ProductService, MongooseModule], // Export MongooseModule!
+	exports: [ProductService, MongooseModule],
 })
 export class ProductModule {}

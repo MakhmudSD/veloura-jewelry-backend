@@ -21,8 +21,7 @@ import { NotificationModule } from '../notification/notification.module';
 		ViewModule,
 		MemberModule,
 		LikeModule,
-		NotificationModule
-		
+		NotificationModule,
 	],
 	providers: [BoardArticleResolver, BoardArticleService],
 	exports: [BoardArticleService],

@@ -12,7 +12,6 @@ import { CreateNotificationInput, DeleteNotificationInput, NotificationsInquiry 
 export class NotificationResolver {
 	constructor(private readonly notificationService: NotificationService) {}
 
-	// Create from client (author is the authed member)
 	@UseGuards(AuthGuard)
 	@Mutation(() => Notification)
 	public async createNotification(
@@ -21,9 +20,8 @@ export class NotificationResolver {
 	): Promise<Notification> {
 		const finalInput: CreateNotificationInput = {
 			...input,
-			authorId: memberId as any, // GraphQL String scalar; stored as ObjectId in Mongo
+			authorId: memberId as any,
 		};
-		// Reuse service create (which also pushes WS)
 		return this.notificationService.createNotification(finalInput);
 	}
 

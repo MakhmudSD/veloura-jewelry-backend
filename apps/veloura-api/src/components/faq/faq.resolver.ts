@@ -10,32 +10,31 @@ import { UpdateFaqInput } from '../../libs/dto/faq/faq.update';
 
 @Resolver(() => Faq)
 export class FaqResolver {
-  constructor(private readonly faqService: FaqService) {}
+	constructor(private readonly faqService: FaqService) {}
 
-  @Query(() => [Faq])
-  getAllFaqs() {
-    return this.faqService.findAll();
-  }
+	@Query(() => [Faq])
+	getAllFaqs() {
+		return this.faqService.findAll();
+	}
 
+	@Mutation(() => Faq)
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	createFaq(@Args('input') input: FaqInput) {
+		return this.faqService.create(input);
+	}
 
-  @Mutation(() => Faq)
-  @Roles(MemberType.ADMIN)
-    @UseGuards(RolesGuard)
-  createFaq(@Args('input') input: FaqInput) {
-    return this.faqService.create(input);
-  }
+	@Mutation(() => Faq)
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	updateFaq(@Args('input') input: UpdateFaqInput) {
+		return this.faqService.update(input);
+	}
 
-  @Mutation(() => Faq)
-  @Roles(MemberType.ADMIN)
-  @UseGuards(RolesGuard)
-  updateFaq(@Args('input') input: UpdateFaqInput) {
-    return this.faqService.update(input);
-  }
-
-  @Mutation(() => Boolean)
-  @Roles(MemberType.ADMIN)
-  @UseGuards(RolesGuard)
-  deleteFaq(@Args('id') id: string) {
-    return this.faqService.delete(id);
-  }
+	@Mutation(() => Boolean)
+	@Roles(MemberType.ADMIN)
+	@UseGuards(RolesGuard)
+	deleteFaq(@Args('id') id: string) {
+		return this.faqService.delete(id);
+	}
 }

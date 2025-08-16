@@ -13,10 +13,10 @@ import { NotificationModule } from '../notification/notification.module';
       { name: 'Faq', schema: FaqSchema },
     ]),
     AuthModule,
-    NotificationModule, // Import NotificationModule if needed
+    NotificationModule,
   ],
   providers: [FaqResolver, FaqService],
-  exports: [FaqService, MongooseModule], // ✅ Export these
+  exports: [FaqService, MongooseModule],
 
 })
 export class FaqModule {}

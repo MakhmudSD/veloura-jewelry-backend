@@ -45,7 +45,7 @@ export class NoticeResolver {
 		return this.noticeService.updateNotice(input);
 	}
 
-	@Mutation(() => Notice) // ✅ Return type is Notice now
+	@Mutation(() => Notice)
 	@Roles(MemberType.ADMIN)
 	@UseGuards(RolesGuard)
 	async deleteNotice(@Args('input') input: string): Promise<Notice> {

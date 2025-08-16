@@ -63,21 +63,21 @@ export class LikeService {
 					case LikeGroup.COMMENT: {
 						const comment = await this.commentModel.findById(input.likeRefId).exec();
 						const commentContent = comment?.commentContent || 'your comment';
-						notificationTitle = `Someone liked your comment!`;
+						notificationTitle = `New Like Comment!`;
 						notificationDesc = `${memberNick} liked your comment: '${commentContent}'.`;
 						break;
 					}
 					case LikeGroup.MEMBER: {
-						notificationTitle = `Your profile got a like!`;
+						notificationTitle = `New Profile Like!`;
 						notificationDesc = `${memberNick} liked your profile on ${new Date().toLocaleDateString()}.`;
 						break;
 					}
 					default: {
-						notificationTitle = `Your content got a like!`;
+						notificationTitle = `New Content Like!`;
 						notificationDesc = `${memberNick} liked your content on ${new Date().toLocaleDateString()}.`;
 					}
 				}
-				
+
 				const receiverId = await this.getOwnerIdForLike(input);
 				if (!receiverId) {
 					console.warn('No receiverId found for like notification, skipping notification creation');
@@ -125,7 +125,7 @@ export class LikeService {
 	private async getOwnerIdForLike(input: LikeInput): Promise<ObjectId> {
 		switch (input.likeGroup) {
 			case LikeGroup.MEMBER:
-				return input.likeRefId; // member is owner
+				return input.likeRefId;
 			case LikeGroup.PRODUCT: {
 				const product = await this.productModel.findById(input.likeRefId).exec();
 				if (!product) throw new BadRequestException(`Product not found: ${input.likeRefId}`);

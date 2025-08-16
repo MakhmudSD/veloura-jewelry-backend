@@ -14,7 +14,7 @@ export class ContactResolver {
     @Args('createContactInput') createContactInput: CreateContactInput,
   ): Promise<ContactModel> {
     const created = await this.contactService.create(createContactInput);
-    return created // ← Fix: makes _id a string
+    return created
   }
   
 

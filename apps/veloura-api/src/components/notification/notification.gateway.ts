@@ -9,13 +9,12 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   @WebSocketServer()
   server: Server;
 
-  private clients = new Map<string, any>(); // userId -> WebSocket
+  private clients = new Map<string, any>();
 
   handleConnection(client: any, req: IncomingMessage) {
     const userId = this.getUserIdFromReq(req);
     if (userId) {
       this.clients.set(userId, client);
-      // console.log(`WS connected: ${userId}`);
     } else {
       client.close();
     }
@@ -39,7 +38,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
   private getUserIdFromReq(req: IncomingMessage): string | null {
     try {
-      const url = new URL(req.url ?? '', 'http://localhost'); // base required to parse
+      const url = new URL(req.url ?? '', 'http://localhost');
       return url.searchParams.get('userId');
     } catch {
       return null;

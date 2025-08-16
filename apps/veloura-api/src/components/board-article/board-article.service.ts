@@ -20,7 +20,6 @@ import {
 	shapeIntoMongoObjectId,
 } from '../../libs/config';
 import { ViewService } from '../view/views.service';
-import { ProductStatus } from '../../libs/enums/product.enum';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeService } from '../like/like.service';

@@ -30,11 +30,11 @@ export class CommentResolver {
 	@UseGuards(AuthGuard)
 	@Mutation(() => Comment)
 	public async updateComment(
-	@Args('input') input: CommentUpdate,
-	@AuthMember('_id') memberId: ObjectId,
+		@Args('input') input: CommentUpdate,
+		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Comment> {
-	const result = await this.commentService.updateComment(memberId, input);
-	return result;
+		const result = await this.commentService.updateComment(memberId, input);
+		return result;
 	}
 
 	@UseGuards(WithoutGuard)
@@ -44,12 +44,12 @@ export class CommentResolver {
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Comments> {
 		console.log('Query: getComments');
-	
+
 		// Ensure input.search and input.search.commentRefId are defined before modifying
 		if (input.search && input.search.commentRefId) {
 			input.search.commentRefId = shapeIntoMongoObjectId(input.search.commentRefId);
 		}
-	
+
 		const result = await this.commentService.getComments(memberId, input);
 		return result;
 	}

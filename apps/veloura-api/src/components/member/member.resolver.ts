@@ -60,24 +60,17 @@ export class MemberResolver {
 		return await this.memberService.updateMember(memberId, input);
 	}
 
-@UseGuards(WithoutGuard)
- @Query(() => Member)
- public async getMember(
-  @Args('memberId') input: string,
-  @AuthMember('_id') memberId: ObjectId,
- ): Promise<Member> {
-  console.log('Query: getMember');
-  const targetId = shapeIntoMongoObjectId(input);
-  // CORRECTED ORDER
-  return await this.memberService.getMember(memberId, targetId);
- }
+	@UseGuards(WithoutGuard)
+	@Query(() => Member)
+	public async getMember(@Args('memberId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Member> {
+		console.log('Query: getMember');
+		const targetId = shapeIntoMongoObjectId(input);
+		return await this.memberService.getMember(memberId, targetId);
+	}
 
 	@UseGuards(WithoutGuard)
 	@Query(() => Members)
-	public async getStores(
-		@Args('input') input: StoreInquiry,
-		@AuthMember('_id') memberId: ObjectId,
-	): Promise<Members> {
+	public async getStores(@Args('input') input: StoreInquiry, @AuthMember('_id') memberId: ObjectId): Promise<Members> {
 		console.log('Query: getStores');
 		return await this.memberService.getStores(memberId, input);
 	}
