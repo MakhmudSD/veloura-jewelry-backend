@@ -3,6 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { T } from './types/common';
 
+/** Convert Direction enum string value ('ASC'|'DESC') to MongoDB sort numeric (1|-1) */
+export const toMongoDir = (dir: any): 1 | -1 => (dir === 'ASC' || dir === 1) ? 1 : -1;
+
 export const availableStoreSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews', 'memberRank'];
 export const availableMemberSorts = ['createdAt', 'updatedAt', 'memberLikes', 'memberViews'];
 export const availableProductOptions = ['productBarter',  'productLimited'];

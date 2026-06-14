@@ -18,6 +18,7 @@ import {
 	lookupAuthMemberLiked,
 	lookupMember,
 	shapeIntoMongoObjectId,
+	toMongoDir,
 } from '../../libs/config';
 import { ViewService } from '../view/views.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
@@ -135,7 +136,7 @@ export class BoardArticleService {
 		const { articleCategory, text } = input.search;
 
 		const match: T = { articleStatus: BoardArticleStatus.ACTIVE };
-		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+		const sort: T = { [input?.sort ?? 'createdAt']: toMongoDir(input?.direction) };
 
 		if (articleCategory) match.articleCategory = articleCategory;
 
@@ -171,7 +172,7 @@ export class BoardArticleService {
 	public async getAllBoardArticlesByAdmin(memberId: ObjectId, input: AllBoardArticlesInquiry): Promise<BoardArticles> {
 		const { articleStatus, articleCategory } = input.search;
 		const match: T = {};
-		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+		const sort: T = { [input?.sort ?? 'createdAt']: toMongoDir(input?.direction) };
 
 		if (articleStatus) match.articleStatus = articleStatus;
 		if (articleCategory) match.articleCategory = articleCategory;

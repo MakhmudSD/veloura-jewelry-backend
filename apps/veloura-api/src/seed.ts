@@ -118,16 +118,14 @@ const hash = (pw: string) => bcrypt.hashSync(pw, 10);
 
 // ─── Seed data ───────────────────────────────────────────────────────────────
 const JEWELRY_IMAGES = [
-  'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?w=800',
-  'https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg?w=800',
-  'https://images.pexels.com/photos/1191536/pexels-photo-1191536.jpeg?w=800',
-  'https://images.pexels.com/photos/691046/pexels-photo-691046.jpeg?w=800',
-  'https://images.pexels.com/photos/248077/pexels-photo-248077.jpeg?w=800',
-  'https://images.pexels.com/photos/2849742/pexels-photo-2849742.jpeg?w=800',
-  'https://picsum.photos/seed/ring1/800/800',
-  'https://picsum.photos/seed/necklace1/800/800',
-  'https://picsum.photos/seed/earring1/800/800',
-  'https://picsum.photos/seed/bracelet1/800/800',
+  'https://cdn.pixabay.com/photo/2017/09/02/12/29/jewelry-2705852_1280.jpg',
+  'https://cdn.pixabay.com/photo/2016/11/21/15/35/accessories-1845928_1280.jpg',
+  'https://cdn.pixabay.com/photo/2019/10/22/06/53/jewellery-4568072_1280.jpg',
+  'https://cdn.pixabay.com/photo/2018/01/29/21/44/ring-3116396_1280.jpg',
+  'https://cdn.pixabay.com/photo/2017/08/06/20/11/jewellery-2596685_1280.jpg',
+  'https://cdn.pixabay.com/photo/2015/01/28/23/35/ring-614865_1280.jpg',
+  'https://cdn.pixabay.com/photo/2020/02/27/13/00/rings-4884843_1280.jpg',
+  'https://cdn.pixabay.com/photo/2016/09/08/01/45/jewelry-1651847_1280.jpg',
 ];
 
 const BRANDS = ['Cartier', 'Bvlgari', 'Tiffany', 'Pandora', 'Swarovski'];

@@ -11,7 +11,7 @@ import { CommentGroup, CommentStatus } from '../../libs/enums/comment.enum';
 import { Comments, Comment } from '../../libs/dto/comment/comment';
 import { CommentUpdate } from '../../libs/dto/comment/comment.update';
 import { StatisticModifier, T } from '../../libs/types/common';
-import { lookupMember } from '../../libs/config';
+import { lookupMember, toMongoDir } from '../../libs/config';
 import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
@@ -129,7 +129,7 @@ export class CommentService {
 	public async getComments(memberId: ObjectId, input: CommentsInquiry): Promise<Comments> {
 		const { commentRefId } = input.search;
 		const match: T = { commentRefId: commentRefId, commentStatus: CommentStatus.ACTIVE };
-		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+		const sort: T = { [input?.sort ?? 'createdAt']: toMongoDir(input?.direction) };
 
 		const result = await this.commentModel
 			.aggregate([

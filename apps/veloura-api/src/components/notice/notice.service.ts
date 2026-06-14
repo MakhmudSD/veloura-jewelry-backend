@@ -6,7 +6,7 @@ import { Notice, Notices } from '../../libs/dto/notice/notice';
 import { UpdateNoticeInput } from '../../libs/dto/notice/notice.update';
 import { NoticeStatus } from '../../libs/enums/notice.enum';
 import { Direction, Message } from '../../libs/enums/common.enum';
-import { shapeIntoMongoObjectId } from '../../libs/config';
+import { shapeIntoMongoObjectId, toMongoDir } from '../../libs/config';
 
 @Injectable()
 export class NoticeService {
@@ -41,7 +41,7 @@ export class NoticeService {
 	}
   
 	const sort: Record<string, any> = {
-	  [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
+	  [input?.sort ?? 'createdAt']: toMongoDir(input?.direction),
 	};
   
 	const result = await this.noticeModel

@@ -19,6 +19,7 @@ import { SocketModule } from './socket/socket.module';
 			introspection: process.env.NODE_ENV !== 'production',
 			uploads: false,
 			autoSchemaFile: true,
+			csrfPrevention: false,
 			formatError: (error: T) => {
 				const graphqlFormattedError = {
 					code: error?.extensions.code,
