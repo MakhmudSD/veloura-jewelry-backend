@@ -118,12 +118,16 @@ const hash = (pw: string) => bcrypt.hashSync(pw, 10);
 
 // ─── Seed data ───────────────────────────────────────────────────────────────
 const JEWELRY_IMAGES = [
-  'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800',
-  'https://images.unsplash.com/photo-1573408301185-9519f94f3fff?w=800',
-  'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=800',
-  'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800',
-  'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=800',
-  'https://images.unsplash.com/photo-1561828995-aa79a2db86dd?w=800',
+  'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?w=800',
+  'https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg?w=800',
+  'https://images.pexels.com/photos/1191536/pexels-photo-1191536.jpeg?w=800',
+  'https://images.pexels.com/photos/691046/pexels-photo-691046.jpeg?w=800',
+  'https://images.pexels.com/photos/248077/pexels-photo-248077.jpeg?w=800',
+  'https://images.pexels.com/photos/2849742/pexels-photo-2849742.jpeg?w=800',
+  'https://picsum.photos/seed/ring1/800/800',
+  'https://picsum.photos/seed/necklace1/800/800',
+  'https://picsum.photos/seed/earring1/800/800',
+  'https://picsum.photos/seed/bracelet1/800/800',
 ];
 
 const BRANDS = ['Cartier', 'Bvlgari', 'Tiffany', 'Pandora', 'Swarovski'];
