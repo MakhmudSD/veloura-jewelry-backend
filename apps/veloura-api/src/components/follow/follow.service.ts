@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Schema, Types } from 'mongoose';
 import { Follower, Following, Followings } from '../../libs/dto/follow/follow';
 import { MemberService } from '../member/member.service';
-import { Direction, Message } from '../../libs/enums/common.enum';
+import { Message } from '../../libs/enums/common.enum';
 import { FollowInquiry } from '../../libs/dto/follow/follow.input';
 import { T } from '../../libs/types/common';
 import {
@@ -107,7 +107,7 @@ export class FollowService {
 		const [agg] = await this.followModel
 			.aggregate([
 				{ $match: match },
-				{ $sort: { createdAt: Direction.DESC } },
+				{ $sort: { createdAt: -1 } },
 				{
 					$facet: {
 						list: [
@@ -138,7 +138,7 @@ export class FollowService {
 		const [agg] = await this.followModel
 			.aggregate([
 				{ $match: match },
-				{ $sort: { createdAt: Direction.DESC } },
+				{ $sort: { createdAt: -1 } },
 				{
 					$facet: {
 						list: [
