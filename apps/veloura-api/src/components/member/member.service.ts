@@ -14,7 +14,7 @@ import { LikeService } from '../like/like.service';
 import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
-import { lookupAuthMemberLiked, shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, shapeIntoMongoObjectId, toMongoDir } from '../../libs/config';
 
 @Injectable()
 export class MemberService {
@@ -117,7 +117,7 @@ export class MemberService {
 	public async getStores(memberId: ObjectId, input: StoreInquiry): Promise<Members> {
 		const { text } = input.search;
 		const match: T = { memberType: MemberType.STORE, memberStatus: MemberStatus.ACTIVE };
-		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+		const sort: T = { [input?.sort ?? 'createdAt']: toMongoDir(input?.direction) };
 
 		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
 		console.log('match', match);
@@ -162,7 +162,7 @@ export class MemberService {
 	public async getAllMembersByAdmin(input: MembersInquiry): Promise<Members> {
 		const { memberStatus, memberType, text } = input.search;
 		const match: T = {};
-		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+		const sort: T = { [input?.sort ?? 'createdAt']: toMongoDir(input?.direction) };
 
 		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
 		console.log('match', match);

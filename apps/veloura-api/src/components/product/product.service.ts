@@ -10,7 +10,7 @@ import { Model, ObjectId } from 'mongoose';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { ProductUpdate } from '../../libs/dto/product/product.update';
 import * as moment from 'moment';
-import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId, toMongoDir } from '../../libs/config';
 import {
 	ProductInput,
 	ProductsInquiry,
@@ -133,7 +133,7 @@ export class ProductService {
 			];
 		}
 
-		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+		const sort: T = { [input?.sort ?? 'createdAt']: toMongoDir(input?.direction) };
 
 		this.shapeMatchQuery(match, input);
 		console.log('match:', match);
@@ -179,7 +179,7 @@ export class ProductService {
 
 		const match: T = { memberId: memberId, productStatus: productStatus ?? { $ne: ProductStatus.DELETE } };
 
-		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+		const sort: T = { [input?.sort ?? 'createdAt']: toMongoDir(input?.direction) };
 
 		const result = await this.productModel
 			.aggregate([
@@ -209,7 +209,7 @@ export class ProductService {
 	public async getAllProductsByAdmin(memberId: ObjectId, input: AllProductsInquiry): Promise<Products> {
 		const { productStatus, productLocation } = input.search;
 		const match: T = {};
-		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+		const sort: T = { [input?.sort ?? 'createdAt']: toMongoDir(input?.direction) };
 
 		if (productStatus) match.productStatus = productStatus;
 
