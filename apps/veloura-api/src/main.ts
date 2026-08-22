@@ -12,6 +12,14 @@ async function bootstrap() {
 	app.useGlobalPipes(new ValidationPipe());
 	app.useGlobalInterceptors(new LoggingInterceptor());
 	app.enableCors({ origin: '*', credentials: true });
+	// Frontend concatenates API_URL + '/' + imagePath, and imagePath already starts
+	// with '/', producing collapsed slashes (e.g. //img/products/x) that Express's
+	// static/route matching treats as a different, unmatched path. Normalize before routing.
+	app.use((req, _res, next) => {
+		const [pathname, query] = req.url.split('?');
+		req.url = pathname.replace(/\/{2,}/g, '/') + (query ? `?${query}` : '');
+		next();
+	});
 	app.use(graphqlUploadExpress({ maxFile: 15000000, maxFiles: 10 }));
 	// Seed data references images as /img/products/<file>, but the files live in ./uploads.
 	// Serve both paths from the same absolute directory so it resolves regardless of CWD.
