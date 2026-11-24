@@ -1,0 +1,25 @@
+# Render blueprint for the Veloura API. Render: New > Blueprint > pick this repo.
+services:
+  - type: web
+    name: veloura-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      - key: PORT_API
+        value: 10000
+      - key: CORS_ORIGINS
+        value: https://veloura-next-bay.vercel.app,http://localhost:3000
+      # secrets: Render asks for these when the blueprint is created
+      - key: MONGO_PROD
+        sync: false
+      - key: SECRET_TOKEN
+        sync: false
