@@ -22,4 +22,4 @@ services:
       - key: MONGO_PROD
         sync: false
       - key: SECRET_TOKEN
-        sync: false
+        generateValue: true
